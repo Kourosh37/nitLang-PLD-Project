@@ -31,29 +31,72 @@ Exit code `0` means success, `1` means a source diagnostic, and `2` means a CLI
 or file error. Source diagnostics include the category, location, source line,
 and caret. Expected failures do not expose a JavaScript stack trace.
 
-## Windows Executable
+## Standalone Executables
 
-Build a standalone Windows command-line executable from the repository root:
+The standalone executables expose exactly the same commands, arguments, output,
+diagnostics, and exit codes as `bun run nitlang`. Only the launcher changes:
+
+```text
+bun run nitlang run program.nit  # development
+nitlang run program.nit          # installed or available on PATH
+```
+
+### Windows x64
+
+Build a Windows executable compatible with modern and older x64 processors:
 
 ```powershell
 bun run build:windows
 ```
 
-The generated file is `dist/nitlang.exe`. It bundles the NITLang CLI and Bun
-runtime, so the target Windows machine does not need Bun or the TypeScript source
-files installed. Source programs remain separate input files and can be executed
-with the same commands as the development CLI:
+Output: `dist/windows-x64/nitlang.exe`
 
 ```powershell
-.\dist\nitlang.exe --help
-.\dist\nitlang.exe check examples\09-showcase.nit
-.\dist\nitlang.exe run examples\09-showcase.nit
-.\dist\nitlang.exe vm examples\02-control-flow.nit
+.\dist\windows-x64\nitlang.exe --help
+.\dist\windows-x64\nitlang.exe check examples\09-showcase.nit
+.\dist\windows-x64\nitlang.exe run examples\09-showcase.nit
+.\dist\windows-x64\nitlang.exe vm examples\02-control-flow.nit
 ```
 
-The executable is generated output and is intentionally excluded from Git by
-the existing `dist/` ignore rule. Rebuild it after changing the interpreter or
-CLI source.
+### Linux
+
+Build for x64 Linux with glibc and baseline CPU compatibility:
+
+```sh
+bun run build:linux
+./dist/linux-x64/nitlang run examples/09-showcase.nit
+```
+
+Build for ARM64 Linux instead:
+
+```sh
+bun run build:linux:arm64
+./dist/linux-arm64/nitlang run examples/09-showcase.nit
+```
+
+### macOS
+
+Build for Apple Silicon Macs:
+
+```sh
+bun run build:macos
+./dist/macos-arm64/nitlang run examples/09-showcase.nit
+```
+
+Build for Intel Macs instead:
+
+```sh
+bun run build:macos:x64
+./dist/macos-x64/nitlang run examples/09-showcase.nit
+```
+
+Each artifact bundles the NITLang CLI and Bun runtime. The target machine does
+not need Bun or the TypeScript source files; it only needs the executable and
+the `.nit` program it should run. Generated artifacts are intentionally excluded
+from Git by the existing `dist/` ignore rule. Rebuild the target artifact after
+changing the interpreter or CLI source. If an artifact was copied from Windows
+and lost its executable permission, restore it on Linux or macOS with
+`chmod +x path/to/nitlang`.
 
 ## Development
 

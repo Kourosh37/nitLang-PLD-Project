@@ -19,7 +19,7 @@ export interface CliIO {
 
 export const help = `NITLang - educational programming language
 
-Usage: bun run nitlang <command> <file.nit>
+Usage: nitlang <command> <file.nit>
 
 Commands:
   run        Execute using the tree-walk interpreter
