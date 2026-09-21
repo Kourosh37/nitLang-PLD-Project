@@ -1,0 +1,31 @@
+import { expect, test } from "bun:test";
+import { SourceFile } from "../src/frontend/source-file";
+import { Environment } from "../src/runtime/environment";
+import { Store } from "../src/runtime/store";
+import { intValue } from "../src/runtime/values";
+const span = new SourceFile("memory.nit", "x").span(0, 1);
+test("fresh cells, lexical lookup and independent shadowed bindings", () => {
+  const store = new Store();
+  const outer = new Environment();
+  const child = new Environment(outer);
+  const a = store.allocate(intValue(10, span));
+  const b = store.allocate(intValue(10, span));
+  expect(a).not.toBe(b);
+  outer.define(1, a, span); child.define(2, b, span);
+  store.write(child.lookup(1, span), intValue(20, span), span);
+  expect(store.read(a, span)).toEqual(intValue(20, span));
+  expect(store.read(b, span)).toEqual(intValue(10, span));
+  expect(child.lookup(2, span)).toBe(b);
+  expect(() => outer.lookup(2, span)).toThrow("Undefined runtime binding");
+  expect(() => outer.define(1, b, span)).toThrow("already defined");
+});
+test("uninitialized and foreign addresses never become undefined values", () => {
+  const store = new Store();
+  const location = store.allocate();
+  expect(() => store.read(location, span)).toThrow("uninitialized");
+  store.write(location, intValue(1, span), span);
+  expect(store.read(location, span)).toEqual(intValue(1, span));
+  const other = new Store().allocate(intValue(1, span));
+  expect(() => store.read(other, span)).toThrow("Unknown storage");
+  expect(() => store.write(other, intValue(2, span), span)).toThrow("Unknown storage");
+});
