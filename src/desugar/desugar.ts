@@ -21,6 +21,7 @@ class Lowerer {
       case "NewExpression": return { ...node, arguments: node.arguments.map((arg) => this.expression(arg)) };
       case "ListExpression": return { ...node, elements: node.elements.map((item) => this.expression(item)) };
       case "LambdaExpression": return { ...node, body: this.expression(node.body) };
+      case "MatchExpression": return { ...node, scrutinee: this.expression(node.scrutinee), arms: node.arms.map((arm) => ({ ...arm, expression: this.expression(arm.expression) })) };
       default: return node;
     }
   }

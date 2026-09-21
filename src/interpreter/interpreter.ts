@@ -89,6 +89,18 @@ export class Interpreter {
         for (const location of fields.values()) this.store.read(location, node.span);
         return object;
       }
+      case "MatchExpression": {
+        const value = this.expression(node.scrutinee, environment);
+        for (const arm of node.arms) {
+          const pattern = arm.pattern;
+          const matches = pattern.kind === "WildcardPattern" ||
+            (pattern.kind === "IntegerPattern" && value.kind === "int" && value.value === pattern.value) ||
+            (pattern.kind === "StringPattern" && value.kind === "string" && value.value === pattern.value) ||
+            (pattern.kind === "BooleanPattern" && value.kind === "bool" && value.value === pattern.value);
+          if (matches) return this.expression(arm.expression, environment);
+        }
+        throw new Error("Checked exhaustive match had no selected arm.");
+      }
       case "CallExpression": {
         if (node.callee.kind === "Identifier" && this.id(node.callee) === PRINT_ID) {
           const arg = node.arguments[0];

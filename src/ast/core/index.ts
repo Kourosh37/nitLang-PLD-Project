@@ -13,7 +13,10 @@ export type Expression =
   | (Node & { readonly kind: "CallExpression"; readonly callee: Expression; readonly arguments: readonly Expression[] })
   | (Node & { readonly kind: "ListExpression"; readonly elements: readonly Expression[] })
   | (Node & { readonly kind: "LambdaExpression"; readonly parameters: readonly Surface.Parameter[]; readonly body: Expression })
-  | (Node & { readonly kind: "NewExpression"; readonly className: Identifier; readonly arguments: readonly Expression[] });
+  | (Node & { readonly kind: "NewExpression"; readonly className: Identifier; readonly arguments: readonly Expression[] })
+  | MatchExpression;
+export interface MatchArm extends Node { readonly kind: "MatchArm"; readonly pattern: Surface.Pattern; readonly expression: Expression }
+export interface MatchExpression extends Node { readonly kind: "MatchExpression"; readonly scrutinee: Expression; readonly arms: readonly MatchArm[] }
 export interface MemberExpression extends Node { readonly kind: "MemberExpression"; readonly object: Expression; readonly member: Identifier }
 export interface BlockStatement extends Node { readonly kind: "BlockStatement"; readonly body: readonly Statement[] }
 export interface FunctionDeclaration extends Omit<Surface.FunctionDeclaration, "body"> { readonly body: BlockStatement }

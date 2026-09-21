@@ -49,6 +49,7 @@ export function resolve(program: C.Program): Resolution {
       case "NewExpression": use(node.className, node.className.name); node.arguments.forEach(expression); break;
       case "ListExpression": node.elements.forEach(expression); break;
       case "LambdaExpression": scoped(() => { parameters(node.parameters); expression(node.body); }); break;
+      case "MatchExpression": expression(node.scrutinee); node.arms.forEach((arm) => expression(arm.expression)); break;
     }
   };
   const block = (node: C.BlockStatement) => scoped(() => node.body.forEach(statement));

@@ -34,7 +34,15 @@ export type Expression =
   | (Node & { readonly kind: "CallExpression"; readonly callee: Expression; readonly arguments: readonly Expression[] })
   | (Node & { readonly kind: "ListExpression"; readonly elements: readonly Expression[] })
   | (Node & { readonly kind: "LambdaExpression"; readonly parameters: readonly Parameter[]; readonly body: Expression })
-  | (Node & { readonly kind: "NewExpression"; readonly className: Identifier; readonly arguments: readonly Expression[] });
+  | (Node & { readonly kind: "NewExpression"; readonly className: Identifier; readonly arguments: readonly Expression[] })
+  | MatchExpression;
+export type Pattern =
+  | (Node & { readonly kind: "IntegerPattern"; readonly value: number })
+  | (Node & { readonly kind: "StringPattern"; readonly value: string })
+  | (Node & { readonly kind: "BooleanPattern"; readonly value: boolean })
+  | (Node & { readonly kind: "WildcardPattern" });
+export interface MatchArm extends Node { readonly kind: "MatchArm"; readonly pattern: Pattern; readonly expression: Expression }
+export interface MatchExpression extends Node { readonly kind: "MatchExpression"; readonly scrutinee: Expression; readonly arms: readonly MatchArm[] }
 
 export interface MemberExpression extends Node {
   readonly kind: "MemberExpression";

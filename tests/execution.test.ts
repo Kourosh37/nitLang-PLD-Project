@@ -75,3 +75,8 @@ test("language exceptions propagate to nearest catch across calls and loops", ()
   expect(() => execute('throw "uncaught"')).toThrow("Runtime Error: Uncaught exception: uncaught");
   expect(() => execute("try { print(1/0) } catch e { print(e) }")).toThrow("Division by zero");
 });
+test("pattern matching is exhaustive, typed and evaluates its scrutinee once", () => {
+  expect(execute('let calls=0 func next():int={calls=calls+1 return 2} print(match next() { 1=>"one"; 2=>"two"; _=>"other" }) print(calls)')).toEqual(["two", "1"]);
+  expect(execute('print(match false { true=>1 false=>0 })')).toEqual(["0"]);
+  for (const source of ['match 1 { 1=>true }', 'match true { true=>1 }', 'match true { true=>1 false=>"x" }', 'match 1 { 1=>1; 1=>2; _=>3 }', 'match true { _=>1; true=>2 }', 'match 1 { "1"=>1; _=>2 }']) expect(() => execute(source)).toThrow("Type Error");
+});

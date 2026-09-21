@@ -340,7 +340,30 @@ class Parser {
         const args = this.arguments();
         return { kind: "NewExpression", className, arguments: args, span: this.spanFrom(start) };
       }
-      case "match": this.fail("Pattern matching syntax is reserved for Milestone 21.");
+      case "match": {
+        this.advance();
+        const scrutinee = this.expression();
+        this.expect("{");
+        const arms: import("../ast/surface").MatchArm[] = [];
+        while (!this.at("}") && !this.at("eof")) {
+          const patternStart = this.current().span.start.offset;
+          let negative = false; if (this.take("-")) negative = true;
+          const patternToken = this.advance();
+          let pattern: import("../ast/surface").Pattern;
+          if (patternToken.kind === "integer") pattern = { kind: "IntegerPattern", value: negative ? -patternToken.value : patternToken.value, span: this.spanFrom(patternStart) };
+          else if (!negative && patternToken.kind === "string-literal") pattern = { kind: "StringPattern", value: patternToken.value, span: patternToken.span };
+          else if (!negative && (patternToken.kind === "true" || patternToken.kind === "false")) pattern = { kind: "BooleanPattern", value: patternToken.kind === "true", span: patternToken.span };
+          else if (!negative && patternToken.kind === "identifier" && patternToken.lexeme === "_") pattern = { kind: "WildcardPattern", span: patternToken.span };
+          else this.fail("Expected a literal pattern or '_'.", patternToken.span);
+          this.expect("=>");
+          const armExpression = this.expression();
+          this.take(";");
+          arms.push({ kind: "MatchArm", pattern, expression: armExpression, span: this.spanFrom(patternStart) });
+        }
+        if (arms.length === 0) this.fail("A match expression requires at least one arm.");
+        this.expect("}");
+        return { kind: "MatchExpression", scrutinee, arms, span: this.spanFrom(start) };
+      }
       default: this.fail(`Expected an expression, found ${this.describeCurrent()}.`);
     }
   }

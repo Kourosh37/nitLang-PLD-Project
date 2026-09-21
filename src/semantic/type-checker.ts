@@ -137,6 +137,27 @@ export class TypeChecker {
         for (const item of node.elements.slice(1)) this.expect(this.expression(item, element), element, item);
         return { kind: "list", element };
       }
+      case "MatchExpression": {
+        const scrutinee = this.expression(node.scrutinee);
+        if (scrutinee.kind !== "int" && scrutinee.kind !== "bool" && scrutinee.kind !== "string") this.fail("match requires a primitive scrutinee.", node.scrutinee);
+        const seen = new Set<string>(); let wildcard = false; let hasTrue = false; let hasFalse = false; let result: Type | null = null;
+        node.arms.forEach((arm, index) => {
+          if (wildcard) this.fail("A wildcard match arm must be last.", arm);
+          const patternType = arm.pattern.kind === "IntegerPattern" ? "int" : arm.pattern.kind === "StringPattern" ? "string" : arm.pattern.kind === "BooleanPattern" ? "bool" : null;
+          if (patternType === null) wildcard = true;
+          else {
+            if (patternType !== scrutinee.kind) this.fail("Pattern type does not match the scrutinee.", arm.pattern);
+            const patternValue = arm.pattern.kind === "IntegerPattern" || arm.pattern.kind === "StringPattern" || arm.pattern.kind === "BooleanPattern" ? arm.pattern.value : "_";
+            const key = `${patternType}:${String(patternValue)}`; if (seen.has(key)) this.fail("Duplicate match pattern.", arm.pattern); seen.add(key);
+            if (arm.pattern.kind === "BooleanPattern") { if (arm.pattern.value) hasTrue = true; else hasFalse = true; }
+          }
+          const armType = this.value(this.expression(arm.expression, expected), arm.expression);
+          result = result === null ? armType : this.join(result, armType, arm);
+          if (index === node.arms.length - 1 && !wildcard && !(scrutinee.kind === "bool" && hasTrue && hasFalse)) this.fail("Non-exhaustive match requires a final wildcard.", node);
+        });
+        if (result === null) this.fail("A match expression requires an arm.", node);
+        return result;
+      }
       case "CallExpression": {
         const callee = this.expression(node.callee, undefined, true);
         if (callee.kind === "builtin" && callee.name === "print") {

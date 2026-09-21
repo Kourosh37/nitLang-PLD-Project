@@ -195,8 +195,9 @@ describe("syntax errors and phase contracts", () => {
     test(`rejects ${JSON.stringify(text)}`, () => { failure(text); });
   }
 
-  test("match stays deferred with a specific diagnostic", () => {
-    expect(failure("match true { true => 1 false => 0 }").message).toContain("Milestone 21");
+  test("match parses literal and wildcard patterns", () => {
+    expect(expression('match true { true => 1; false => 0 }')).toMatchObject({ kind: "MatchExpression", arms: [{ pattern: { kind: "BooleanPattern", value: true } }, { pattern: { value: false } }] });
+    expect(expression('match 1 { -1 => "negative"; _ => "other" }')).toMatchObject({ arms: [{ pattern: { value: -1 } }, { pattern: { kind: "WildcardPattern" } }] });
   });
 
   test("syntax errors identify the unexpected token and EOF", () => {
