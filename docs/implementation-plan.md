@@ -1,7 +1,7 @@
 # Implementation plan and progress
 
-Milestones 0-23 are complete. M24 documentation/cleanup is in progress; M25 is
-the final hidden-case stress suite and requirements matrix.
+Milestones 0-25 are complete. The final hidden-case stress suite, documentation
+and requirements matrix pass the repository quality checks.
 
 For every milestone: explain semantics/files/decisions before editing; implement;
 typecheck and run existing tests; add focused tests; rerun the full suite; fix
@@ -15,8 +15,8 @@ failures before proceeding. Record commands, results, limitations and next step.
 | 3 (complete) | Surface AST/parser/precedence; syntax and associativity tests |
 | 4 (complete) | Primitive/variable/block contracts; AST and operation tests, no unchecked execution |
 | 5-23 (complete) | Memory, lowering, semantics, full interpreter, VM, extension and formal documents |
-| 24 | README, memory/VM docs, examples, teaching notes, cleanup |
-| 25 | Hidden-case style combinations and final requirements validation matrix |
+| 24 (complete) | README, memory/VM docs, examples, teaching notes, cleanup |
+| 25 (complete) | Hidden-case style combinations and final requirements validation matrix |
 
 Lexical/parser fixtures exist in tests/fixtures/valid and tests/fixtures/invalid;
 examples/surface-tour.nit is inspectable with ast. Add executable validation when

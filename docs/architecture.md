@@ -1,6 +1,6 @@
 # NITLang architecture
 
-Status: Milestones 0-23 are implemented. The mandatory tree interpreter, VM
+Status: Milestones 0-25 are implemented. The mandatory tree interpreter, VM
 subset and GROUP_SIZE=1 pattern-matching extension are operational.
 
 ```mermaid
