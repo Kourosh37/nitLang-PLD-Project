@@ -1,4 +1,6 @@
 import type { SourceSpan } from "../../frontend/source-span";
+import type { BinaryOperator, UnaryOperator } from "../../language/operators";
+export type { BinaryOperator } from "../../language/operators";
 
 export interface Node { readonly span: SourceSpan }
 export interface Identifier extends Node { readonly kind: "Identifier"; readonly name: string }
@@ -18,7 +20,6 @@ export interface Parameter extends Node {
   readonly annotation: TypeAnnotation;
 }
 
-export type BinaryOperator = "or" | "and" | "==" | "!=" | "<" | ">" | "<=" | ">=" | "+" | "-" | "*" | "/";
 export type Expression =
   | Identifier
   | (Node & { readonly kind: "IntegerLiteral"; readonly value: number })
@@ -26,7 +27,7 @@ export type Expression =
   | (Node & { readonly kind: "BooleanLiteral"; readonly value: boolean })
   | (Node & { readonly kind: "ThisExpression" })
   | (Node & { readonly kind: "GroupExpression"; readonly expression: Expression })
-  | (Node & { readonly kind: "UnaryExpression"; readonly operator: "-" | "not"; readonly operand: Expression })
+  | (Node & { readonly kind: "UnaryExpression"; readonly operator: UnaryOperator; readonly operand: Expression })
   | (Node & { readonly kind: "ReferenceExpression"; readonly target: Identifier })
   | (Node & { readonly kind: "BinaryExpression"; readonly operator: BinaryOperator; readonly left: Expression; readonly right: Expression })
   | MemberExpression

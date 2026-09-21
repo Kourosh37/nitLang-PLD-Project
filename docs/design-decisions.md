@@ -82,3 +82,17 @@ would obscure aliasing. This is a design explanation, not implemented runtime co
 - Enable ast now because its complete dependency chain exists; do not enable
   check or run before their semantic pipeline is implemented. File I/O is injected
   into CLI tests and performed only at the actual process boundary.
+
+## Milestone 4 decisions
+
+- Implement immutable tagged primitives and internal void before composite
+  runtime values. Keep factories as the construction boundary and canonicalize -0.
+- Use bigint intermediates for exact arithmetic, then validate safe-integer bounds.
+  NITLang int remains a safe-integer number payload; no bigint surface type is added.
+- Put shared operator types in src/language, retaining the existing Surface AST
+  type re-export. Runtime operations must not import Surface AST.
+- Provide defensive operand-kind errors, zero-division/overflow faults and output
+  formatting as pure value operations. Static operand validation still belongs
+  to M7. Exclude eager and/or operations because they will lower to conditionals.
+- Complete the variable/block contract and source-structure fixtures in M4; do
+  not claim executed scope behavior before M5-M7 supply the required pipeline.

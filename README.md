@@ -4,10 +4,11 @@ An educational programming language implemented incrementally in strict TypeScri
 using Bun. The target is a statically checked tree-walk interpreter plus a stack
 VM for a smaller subset, with explicit lexical environments and store locations.
 
-**Current status: Milestone 3.** Source text can be lexed and parsed into a typed
+**Current status: Milestone 4.** Source text can be lexed and parsed into a typed
 Surface AST with source locations and structured syntax diagnostics. The `ast`
-CLI command is operational. Checker, desugaring, interpreter and VM are not yet
-implemented; examples can be inspected as ASTs but cannot execute yet.
+CLI command is operational. Tagged primitive values and checked low-level
+operations are implemented. Storage, checker, desugaring, interpreter and VM are
+not yet implemented; examples can be inspected as ASTs but cannot execute yet.
 
 ## Requirements and setup
 
@@ -74,6 +75,8 @@ print, conditions and loops. Pattern matching is the extension for GROUP_SIZE = 
 src/cli/       CLI interface and Bun entry point
 src/frontend/  Source positions, lexer, tokens, parser and precedence table
 src/ast/surface/ Typed syntax tree and annotation nodes
+src/language/  Shared operator types
+src/runtime/   Tagged primitive values and operations (no evaluator yet)
 src/diagnostics/ Structured diagnostics and text formatting
 tests/         Frontend, diagnostics, source locations, CLI and .nit fixtures
 examples/      Programs inspectable through the ast command
@@ -85,9 +88,11 @@ Read the [language specification](docs/language-spec.md),
 [design decisions](docs/design-decisions.md), and
 [implementation plan](docs/implementation-plan.md), plus the implemented
 [source-location contract](docs/source-locations.md), [lexer API](docs/lexer.md)
-and [parser/AST design](docs/parser.md).
+and [parser/AST design](docs/parser.md). Runtime foundations are described in
+[primitive semantics](docs/primitive-semantics.md) and the
+[memory-model contract](docs/memory-model.md).
 
 Future stages add executable fixtures/examples, runtime/memory documentation, VM
 instructions, formal semantics, Hoare reasoning and a verified requirements matrix.
-Next: Milestone 4, primitive/variable/block contracts and operation tests; checked
-execution follows the storage, lowering and semantic infrastructure in M5-M7.
+Next: Milestone 5, Environment/Store/Location implementation. Checked execution
+follows the storage, lowering and semantic infrastructure in M5-M7.

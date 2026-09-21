@@ -1,4 +1,4 @@
-import type { BinaryOperator } from "../ast/surface";
+import type { BinaryOperator } from "../language/operators";
 
 export const binaryPrecedence: Readonly<Record<BinaryOperator, number>> = Object.freeze({
   or: 1, and: 2,

@@ -1,8 +1,9 @@
 # Implementation plan and progress
 
-Milestones 0-3 are complete. The user authorized each next milestone after
+Milestones 0-4 are complete under the documented dependency adjustment. The user authorized each next milestone after
 committing its predecessor. The frontend produces Surface AST through the ast
-command; language execution is not implemented. Next: M4 primitive contracts.
+command, and primitive operation helpers are tested. Variable/block execution
+remains deferred to the storage/lowering/checking milestones. Next: M5 memory model.
 
 For every milestone: explain semantics/files/decisions before editing; implement;
 typecheck and run existing tests; add focused tests; rerun the full suite; fix
@@ -14,7 +15,7 @@ failures before proceeding. Record commands, results, limitations and next step.
 | 1 (complete) | Final specification/EBNF and SourceSpan; position/span tests |
 | 2 (complete) | Lexer; tokens, escapes, malformed source, source positions |
 | 3 (complete) | Surface AST/parser/precedence; syntax and associativity tests |
-| 4 | Primitive/variable/block contracts; AST and operation tests, no unchecked execution |
+| 4 (complete) | Primitive/variable/block contracts; AST and operation tests, no unchecked execution |
 | 5 | Environment/Store/Location; fresh locations, shadowing, mutation |
 | 6 | Separate Core AST/desugaring; hygiene, once-only bounds, short circuit structure |
 | 7 | Symbol tables/resolver/typechecker; static rejection and checked primitive execution |

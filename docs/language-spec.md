@@ -2,7 +2,8 @@
 
 Finalized in Milestone 1. This is the target contract, not a list of implemented
 features. Tooling, source locations, lexing, Surface AST parsing and the ast CLI
-are implemented. Semantic checking and execution remain future milestones.
+are implemented, along with primitive runtime value/operation helpers (M4).
+Semantic checking, variable storage and program execution remain future milestones.
 Changes to this contract require an explicit design decision and matching tests.
 
 ## Lexical rules

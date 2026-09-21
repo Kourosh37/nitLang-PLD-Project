@@ -1,7 +1,8 @@
 # NITLang architecture
 
-Status: Milestones 0-3 are implemented (tooling, ast CLI, source locations,
-tokens, lexer, Surface AST, parser and syntax diagnostics). Other compiler/runtime modules below
+Status: Milestones 0-4 are implemented under the dependency adjustment (tooling,
+ast CLI, source locations, tokens, lexer, Surface AST, parser, syntax diagnostics,
+tagged primitive values and primitive operations). Other compiler/runtime modules below
 are planned contracts.
 GROUP_SIZE = 1. Pattern matching is the single planned extension.
 
@@ -81,3 +82,13 @@ boundary. Statements use recursive descent and expressions precedence climbing.
 Syntax nodes retain unresolved identifiers and type annotations, including
 surface sugars for later lowering. CLI ast reads source and prints JSON without
 executing or typechecking it. See parser.md for contracts and restrictions.
+
+## Primitive runtime boundary
+
+Runtime values are tagged and immutable. Shared primitive operations accept
+already evaluated values and a source span; they do not depend on Surface AST,
+environment lookup or execution. Exact bigint arithmetic is checked against the
+safe-integer bounds before conversion to int payloads. Runtime guards defend
+operation preconditions; they do not replace future static checking. Operator
+types live in src/language so both frontend and runtime can reuse them without
+cross-phase dependencies. See primitive-semantics.md and memory-model.md.
