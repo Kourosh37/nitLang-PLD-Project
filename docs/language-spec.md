@@ -1,7 +1,8 @@
-# NITLang language specification (draft)
+# NITLang language specification v1
 
-This is the target contract, not a list of implemented features. Milestone 0
-implements setup and the CLI interface only. Finalize this draft in Milestone 1.
+Finalized in Milestone 1. This is the target contract, not a list of implemented
+features. Only tooling, the CLI skeleton and source locations are implemented.
+Changes to this contract require an explicit design decision and matching tests.
 
 ## Lexical rules
 
@@ -18,6 +19,20 @@ Tokens use longest match (`:=`, `==`, `!=`, `<=`, `>=`, `->`, `=>` before their
 prefixes). Punctuation is defined exhaustively by the grammar. Every token,
 including EOF, has a half-open span with zero-based UTF-16 offsets and one-based
 line/column; CRLF counts as one newline. Columns count UTF-16 code units.
+LF and lone CR also end a line. Tabs count as one column; no tab expansion or
+Unicode normalization occurs. Whitespace is exactly space, tab, CR and LF;
+a leading U+FEFF byte-order mark is ignored but retains its source offset.
+Other Unicode whitespace outside strings/comments is a syntax error. An offset
+at either code unit of CRLF belongs to the preceding line; the next line starts
+after LF. EOF is at text.length, including the final empty line after a newline.
+Offsets inside surrogate pairs are valid source positions, not grapheme indices.
+An empty source has line 1, column 1. See [source locations](source-locations.md).
+
+Leading zeros are decimal (`007` is 7); signs are separate unary operators.
+Numeric separators, radix prefixes and decimals are unsupported. A digit run
+immediately followed by an identifier character is a malformed numeric literal.
+Unterminated strings/comments and unknown characters produce Syntax Errors.
+The first `*/` closes a block comment; nested `/*` has no nesting effect.
 
 ## Expressions and evaluation
 
@@ -50,6 +65,16 @@ references and mutual recursion are not in the base language. A closure cannot
 see a later declaration in its surrounding block. Class names become available
 for their own member types, and all member signatures are collected before bodies.
 
+The initializer of a let is resolved before introducing its new binding, so
+`let x = x` in an inner scope reads an outer x if one exists. Parameters and the
+outermost function body share a scope; duplicate parameters and a body let with
+the same name are errors. Catch bindings share the catch block's scope. Builtins
+occupy an enclosing prelude scope and may be shadowed. Classes, functions and
+variables share a declaration namespace; type position requires a class symbol
+or a recognized type form. Function and class declaration bindings are read-only;
+only let variables, parameters, catch bindings and generated loop bindings are
+assignable. Taking ref requires such an assignable binding.
+
 Types are int, bool, string, void, nominal classes, `List<T>`, `Ref<T>`, and
 `Fn(T, ...) -> T`. Void is allowed only as a function result; bare return is
 spelled `return;`. Lists are immutable and invariant; references are invariant;
@@ -73,6 +98,13 @@ are incompatible. Recursive functions require an explicit result annotation
 (including void). Non-void bodies must conservatively return/throw on every
 path: return/throw terminate, both branches of an if must terminate; loops never
 prove termination. Lambda result types come from their expression.
+
+Returns in nested functions do not contribute to an enclosing result type.
+All statements, including unreachable ones, are checked. For try/catch to prove
+termination, both bodies must terminate conservatively. A body with only throws
+infers void unless annotated otherwise. Method result inference uses dependencies
+between member bodies; every method in a recursive dependency cycle requires an
+explicit result annotation. Noncyclic forward member calls may infer normally.
 
 List elements must have identical types (no automatic class widening). Empty
 lists require an expected `List<T>` from an annotation, argument, or annotated
@@ -158,4 +190,7 @@ After mandatory features pass, add match expressions with literal patterns
 must match its primitive type; duplicate patterns/unreachable arms are rejected.
 Bool matches require both booleans or a wildcard; int/string require a wildcard.
 All arm result types must be compatible using return-type joining. No pattern
-bindings, guards or destructuring. This is planned, not implemented in Milestone 0.
+bindings, guards or destructuring. This is planned for Milestone 21. Arms may be
+separated by semicolons; a separator is required where the next pattern could
+continue the preceding expression (notably a negative integer). `_` is a wildcard
+only in pattern position, and an ordinary identifier elsewhere.

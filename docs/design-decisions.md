@@ -1,7 +1,7 @@
 # Design decisions
 
-These decisions resolve assignment ambiguities before implementation. They are
-draft contracts to finalize in Milestone 1; changes must update docs and tests.
+These decisions resolve assignment ambiguities before implementation. They were
+finalized in Milestone 1; changes must update docs and tests.
 
 | Question | Decision and reason |
 | --- | --- |
@@ -47,3 +47,22 @@ Example: Why split Environment and Store? Environment identifies a binding's
 location; Store holds its mutable contents. Two references can alias that location
 while shadowed variables allocate independent ones. A direct name-to-value map
 would obscure aliasing. This is a design explanation, not implemented runtime code.
+
+## Milestone 1 clarifications
+
+- Keep original UTF-16 source text, not normalized text or grapheme indices.
+  Recognize LF, CR and CRLF; tabs count as one column. Positions within a CRLF
+  pair remain on the previous line. This gives every valid offset one position.
+- Source spans carry a display name, not a dependency on disk paths or Bun I/O.
+  SourceFile validates offset ranges and freezes returned positions/spans.
+  Invalid API offsets are programmer RangeErrors, not NITLang Runtime Errors.
+- Require a semicolon before a match arm whose pattern would be consumed as
+  part of the preceding expression. This resolves negative-pattern ambiguity
+  without changing the assignment's separator-free ordinary examples.
+- Let initializers see outer scopes before introducing the new binding. Function
+  parameters share the function body's outer scope; catch bindings share their
+  handler scope. Builtins may be shadowed. Declaration functions/classes are
+  read-only, but function values stored in let bindings remain mutable.
+- Recursive method inference cycles require explicit result annotations. Return
+  inference excludes nested functions, checks unreachable statements, and uses
+  conservative try/catch path analysis. These avoid inference-order accidents.

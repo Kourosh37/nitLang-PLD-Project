@@ -1,7 +1,8 @@
 # Implementation plan and progress
 
-Only Milestone 0 is in scope for the first delivery. Do not proceed to Milestone 1
-without the next user instruction. No language requirement is complete yet.
+Milestones 0 and 1 are complete. The user authorized Milestone 1 after committing
+Milestone 0. The specification and source-location infrastructure are complete;
+language execution is not implemented. Next delivery: Milestone 2, the lexer.
 
 For every milestone: explain semantics/files/decisions before editing; implement;
 typecheck and run existing tests; add focused tests; rerun the full suite; fix
@@ -9,8 +10,8 @@ failures before proceeding. Record commands, results, limitations and next step.
 
 | Milestone | Deliverable and validation |
 | --- | --- |
-| 0 | Strict TS/Bun setup, CLI skeleton, design drafts; CLI unit/process tests |
-| 1 | Final specification/EBNF and SourceSpan; position/span tests |
+| 0 (complete) | Strict TS/Bun setup, CLI skeleton, design drafts; CLI unit/process tests |
+| 1 (complete) | Final specification/EBNF and SourceSpan; position/span tests |
 | 2 | Lexer; tokens, escapes, malformed source, source positions |
 | 3 | Surface AST/parser/precedence; syntax and associativity tests |
 | 4 | Primitive/variable/block contracts; AST and operation tests, no unchecked execution |

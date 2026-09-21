@@ -1,6 +1,7 @@
-# NITLang architecture (design draft)
+# NITLang architecture
 
-Status: only Milestone 0 is implemented. The modules below are planned contracts.
+Status: Milestones 0 and 1 are implemented (tooling, CLI skeleton, source locations).
+Compiler/runtime modules below are planned contracts.
 GROUP_SIZE = 1. Pattern matching is the single planned extension.
 
 ```mermaid
@@ -53,3 +54,12 @@ but execute independently. Differential tests compare their observable output.
 
 Tests progress from phase units to real source pipelines and cross-backend tests.
 No placeholder implementation is considered a passing language feature.
+
+## Source ownership
+
+`SourceFile` owns immutable text and indexes line starts once. `positionAt` uses
+binary search; `span` produces immutable endpoints and a source name; `lineText`
+provides diagnostic line content without terminators. `SourcePosition` and
+`SourceSpan` are data-only interfaces in a separate module, so tokens, ASTs and
+diagnostics will not depend on the lexer or filesystem. No newline normalization
+is allowed because offsets must continue to index the original source text.

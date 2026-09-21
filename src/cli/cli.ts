@@ -21,7 +21,7 @@ Commands:
 Options:
   -h, --help Show this help
 
-Milestone 0: command interface only; language execution is not implemented.`;
+Command interface only; language execution is not implemented yet.`;
 
 function isCommand(value: string): value is Command {
   return commands.some((command) => command === value);
@@ -41,6 +41,6 @@ export function runCli(args: readonly string[], io: CliIO): number {
     io.stderr(`CLI Error: expected '${command} <file.nit>'. Use --help.`);
     return 2;
   }
-  io.stderr(`CLI Error: '${command}' is not implemented in Milestone 0.`);
+  io.stderr(`CLI Error: '${command}' is not implemented yet.`);
   return 2;
 }

@@ -4,8 +4,9 @@ An educational programming language implemented incrementally in strict TypeScri
 using Bun. The target is a statically checked tree-walk interpreter plus a stack
 VM for a smaller subset, with explicit lexical environments and store locations.
 
-**Current status: Milestone 0.** Project tooling and a tested CLI skeleton are
-available. Lexer, parser, checker, interpreter and VM are not implemented yet.
+**Current status: Milestone 1.** Project tooling, a tested CLI skeleton, finalized
+language specification and immutable source locations are available.
+Lexer, parser, checker, interpreter and VM are not implemented yet.
 Language examples below illustrate the specification; they cannot run yet.
 
 ## Requirements and setup
@@ -64,15 +65,17 @@ print, conditions and loops. Pattern matching is the extension for GROUP_SIZE = 
 
 ```text
 src/cli/       CLI interface and Bun entry point
-tests/         Unit and actual CLI process tests
-docs/          Specification drafts, architecture and milestone plan
+src/frontend/  SourcePosition, SourceSpan and indexed SourceFile
+tests/         Source-location, CLI unit and actual process tests
+docs/          Language specification, architecture and milestone reports
 ```
 
 Read the [language specification](docs/language-spec.md),
 [complete EBNF](docs/grammar.md), [architecture](docs/architecture.md),
 [design decisions](docs/design-decisions.md), and
-[implementation plan](docs/implementation-plan.md).
+[implementation plan](docs/implementation-plan.md), plus the implemented
+[source-location contract](docs/source-locations.md).
 
 Future stages add source fixtures, examples, runtime/memory documentation, VM
 instructions, formal semantics, Hoare reasoning and a verified requirements matrix.
-Next: Milestone 1, finalizing the language contract and implementing SourceSpan.
+Next: Milestone 2, the hand-written lexer with source spans and lexical diagnostics.

@@ -1,6 +1,6 @@
-# Complete EBNF draft
+# Complete EBNF v1
 
-Target grammar, including the deferred pattern-matching extension. Quoted text
+Finalized in Milestone 1, including the deferred pattern-matching extension. Quoted text
 denotes tokens; braces mean repetition, brackets mean optional. Identifier,
 integer and string follow language-spec.md. Keywords cannot be identifiers.
 Whitespace/comments separate tokens but do not delimit statements. Parsing an
@@ -68,7 +68,34 @@ Lambda body parsing is greedy: `lambda (x:int) -> x + 1` includes the addition.
 To immediately call a lambda, parenthesize it. Match arms use `=>` to distinguish
 their pattern from subsequent expression syntax; semicolons are recommended
 between arms. Empty matches are invalid. A negative pattern means a negative
-integer literal, not arbitrary expression evaluation.
+integer literal, not arbitrary expression evaluation. A semicolon is required
+before a negative pattern following an expression: `0 => 1; -1 => 2; _ => 3`.
+Without that separator, subtraction belongs to the previous arm's expression
+and the remaining `=>` produces a Syntax Error. This follows the same greedy
+expression rule as statements. Pattern matching syntax remains deferred to M21.
+
+## Lexical terminals
+
+```ebnf
+identifier      = letter, { letter | digit } ;
+letter          = "A" ... "Z" | "a" ... "z" | "_" ;
+digit           = "0" ... "9" ;
+integer         = digit, { digit } ;
+string          = '"', { stringCharacter | escape }, '"' ;
+escape          = '\\', ( '"' | '\\' | "n" | "r" | "t" ) ;
+whitespace      = " " | TAB | CR | LF ;
+```
+
+`stringCharacter` is any UTF-16 code unit except double quote, backslash, CR or
+LF. Identifier recognition precedes keyword classification. Integer recognition
+rejects an immediately adjoining letter/underscore and checks the safe-integer
+bound. Comments and an optional initial BOM are skipped under the lexical rules
+in the specification; comment markers inside strings are ordinary characters.
+EOF is an explicit zero-width token, not a source character.
+
+Operator/punctuation token inventory:
+`+ - * / == != < > <= >= = := -> => ( ) { } [ ] , : ; .`.
+Standalone `!`, `&`, `|`, `%` and `?` have no token in v1.
 
 | Binding strength | Operators | Association |
 | --- | --- | --- |

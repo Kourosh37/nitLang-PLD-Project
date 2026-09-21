@@ -29,7 +29,7 @@ test("actual process propagates failure status without a host stack trace", asyn
   const result = await execute(["run", "missing.nit"]);
   expect(result.status).toBe(2);
   expect(result.stdout).toBe("");
-  expect(result.stderr).toContain("not implemented in Milestone 0");
+  expect(result.stderr).toContain("not implemented yet");
   expect(result.stderr).not.toContain("at runCli");
 });
 

@@ -18,7 +18,7 @@ describe("CLI interface", () => {
       expect(result.status).toBe(0);
       expect(result.stderr).toEqual([]);
       expect(result.stdout.join("\n")).toContain("Usage:");
-      expect(result.stdout.join("\n")).toContain("Milestone 0");
+      expect(result.stdout.join("\n")).toContain("language execution is not implemented yet");
     });
   }
 
@@ -28,7 +28,7 @@ describe("CLI interface", () => {
       expect(result.status).toBe(2);
       expect(result.stdout).toEqual([]);
       expect(result.stderr).toEqual([
-        `CLI Error: '${command}' is not implemented in Milestone 0.`,
+        `CLI Error: '${command}' is not implemented yet.`,
       ]);
     });
 
