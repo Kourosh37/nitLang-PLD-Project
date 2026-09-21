@@ -18,6 +18,7 @@ test suite. Start with `01-basics.nit` and finish with `09-showcase.nit`.
 
 - [Runbook](docs/RUNBOOK.md): setup, commands, tests, demos, and troubleshooting
 - [Language rules](docs/LANGUAGE.md): syntax, types, semantics, and VM limits
+- [Project checklist](docs/PROJECT-CHECKLIST.md): PDF requirements mapped to code and tests
 
 ## Pipeline
 

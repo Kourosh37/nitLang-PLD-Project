@@ -2,6 +2,7 @@
 
 This is the operational guide for installing, validating, demonstrating, and
 debugging the project. Language behavior is defined in [LANGUAGE.md](LANGUAGE.md).
+The assignment evidence is indexed in [PROJECT-CHECKLIST.md](PROJECT-CHECKLIST.md).
 
 ## Setup
 
