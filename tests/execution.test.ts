@@ -42,3 +42,8 @@ test("lambdas are first class and closures retain lexical locations", () => {
   expect(execute("let x=1 let f=lambda () -> x x=7 print(f())")).toEqual(["7"]);
   expect(() => execute("let f=lambda (x:int) -> x f(true)")).toThrow("Type Error");
 });
+test("homogeneous lists and map are checked and evaluated in order", () => {
+  expect(execute("let xs=[1,2,3] let ys=map(lambda (x:int) -> x*2,xs) print(ys)")).toEqual(["[2, 4, 6]"]);
+  expect(execute("let base=3 print(map(lambda (x:int) -> x+base,[1,2])) let empty:List<int> = [] print(map(lambda (x:int)->x,empty))")).toEqual(["[4, 5]", "[]"]);
+  for (const source of ["let x=[]", 'let x=[1,"x"]', "map(lambda (x:bool)->x,[1])", "map(lambda (x:int)->x,1)", "map(lambda (x:int)->x)"]) expect(() => execute(source)).toThrow("Type Error");
+});

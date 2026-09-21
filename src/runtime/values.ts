@@ -6,10 +6,11 @@ export interface IntValue { readonly kind: "int"; readonly value: number }
 export interface BoolValue { readonly kind: "bool"; readonly value: boolean }
 export interface StringValue { readonly kind: "string"; readonly value: string }
 export interface VoidValue { readonly kind: "void" }
+export interface ListValue { readonly kind: "list"; readonly elements: readonly RuntimeValue[] }
 
 export type PrimitiveValue = IntValue | BoolValue | StringValue;
 /** Later milestones extend this union with closures, lists, references and objects. */
-export type RuntimeValue = PrimitiveValue | VoidValue | ClosureValue;
+export type RuntimeValue = PrimitiveValue | VoidValue | ClosureValue | ListValue;
 
 export const MIN_INT = -Number.MAX_SAFE_INTEGER;
 export const MAX_INT = Number.MAX_SAFE_INTEGER;
@@ -30,4 +31,7 @@ export function boolValue(value: boolean): BoolValue {
 
 export function stringValue(value: string): StringValue {
   return Object.freeze({ kind: "string", value });
+}
+export function listValue(elements: readonly RuntimeValue[]): ListValue {
+  return Object.freeze({ kind: "list", elements: Object.freeze([...elements]) });
 }

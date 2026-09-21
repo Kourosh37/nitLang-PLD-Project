@@ -72,7 +72,7 @@ export class TypeChecker {
     if (type.kind === "builtin" && !allowBuiltin) this.fail("Polymorphic builtins must be called directly.", node);
     this.types.set(node, type); return type;
   }
-  expressionType(node: C.Expression, _expected?: Type): Type {
+  expressionType(node: C.Expression, expected?: Type): Type {
     switch (node.kind) {
       case "IntegerLiteral": return INT;
       case "BooleanLiteral": return BOOL;
@@ -104,12 +104,33 @@ export class TypeChecker {
         });
         return { kind: "function", parameters, result: this.value(this.expression(node.body), node.body) };
       }
+      case "ListExpression": {
+        if (node.elements.length === 0) {
+          if (expected?.kind !== "list") this.fail("Empty list requires an expected List type.", node);
+          return expected;
+        }
+        const element = this.value(this.expression(node.elements[0] as C.Expression), node);
+        for (const item of node.elements.slice(1)) this.expect(this.expression(item, element), element, item);
+        return { kind: "list", element };
+      }
       case "CallExpression": {
         const callee = this.expression(node.callee, undefined, true);
         if (callee.kind === "builtin" && callee.name === "print") {
           if (node.arguments.length !== 1) this.fail("print expects one argument.", node);
           for (const argument of node.arguments) this.value(this.expression(argument), argument);
           return VOID_TYPE;
+        }
+        if (callee.kind === "builtin" && callee.name === "map") {
+          if (node.arguments.length !== 2) this.fail("map expects two arguments.", node);
+          const callbackNode = node.arguments[0], listNode = node.arguments[1];
+          if (callbackNode === undefined || listNode === undefined) this.fail("map expects two arguments.", node);
+          const list = this.expression(listNode);
+          if (list.kind !== "list") this.fail("map second argument must be a list.", listNode);
+          const callback = this.expression(callbackNode);
+          if (callback.kind !== "function" || callback.parameters.length !== 1 || callback.result === null || callback.result.kind === "void") this.fail("map callback must be a one-argument value function.", callbackNode);
+          const parameter = callback.parameters[0]; if (parameter === undefined) this.fail("map callback requires one parameter.", callbackNode);
+          this.expect(list.element, parameter, listNode);
+          return { kind: "list", element: callback.result };
         }
         if (callee.kind !== "function") this.fail("Expected a callable value.", node.callee);
         if (callee.result === null) this.fail("Recursive functions require an explicit return annotation.", node);

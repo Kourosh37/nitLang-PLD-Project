@@ -4,7 +4,7 @@ import { PRINT_ID } from "../semantic/resolver";
 import { Environment } from "../runtime/environment";
 import { Store } from "../runtime/store";
 import { applyBinary, applyUnary, formatPrimitive, requireBoolean } from "../runtime/primitive-operations";
-import { intValue, boolValue, stringValue, VOID } from "../runtime/values";
+import { intValue, boolValue, stringValue, listValue, VOID } from "../runtime/values";
 import type { RuntimeValue } from "../runtime/values";
 import { ControlSignal } from "../runtime/completion";
 import type { SourceSpan } from "../frontend/source-span";
@@ -47,11 +47,19 @@ export class Interpreter {
       case "BinaryExpression": return applyBinary(node.operator, this.expression(node.left, environment), this.expression(node.right, environment), node.span);
       case "ConditionalExpression": return this.expression(requireBoolean(this.expression(node.condition, environment), node.span) ? node.consequent : node.alternative, environment);
       case "LambdaExpression": return { kind: "closure", parameters: node.parameters, body: node.body, environment };
+      case "ListExpression": return listValue(node.elements.map((item) => this.expression(item, environment)));
       case "CallExpression": {
         if (node.callee.kind === "Identifier" && this.id(node.callee) === PRINT_ID) {
           const arg = node.arguments[0];
           if (arg === undefined) throw new Error("Missing checked print argument.");
           this.output(formatPrimitive(this.expression(arg, environment), node.span)); return VOID;
+        }
+        if (node.callee.kind === "Identifier" && this.id(node.callee) === -2) {
+          const callbackNode = node.arguments[0], listNode = node.arguments[1];
+          if (callbackNode === undefined || listNode === undefined) throw new Error("Missing checked map arguments.");
+          const callback = this.expression(callbackNode, environment), list = this.expression(listNode, environment);
+          if (list.kind !== "list") throw new Error("Checked map list invariant failed.");
+          return listValue(list.elements.map((element) => this.invoke(callback, [element], node.span)));
         }
         const callee = this.expression(node.callee, environment);
         const args = node.arguments.map((arg) => this.expression(arg, environment));

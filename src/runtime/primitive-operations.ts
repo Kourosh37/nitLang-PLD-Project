@@ -74,5 +74,6 @@ export function formatPrimitive(value: RuntimeValue, span: SourceSpan): string {
     case "string": return value.value;
     case "void": fail("Cannot print a void value.", span);
     case "closure": return "<function>";
+    case "list": return `[${value.elements.map((element) => formatPrimitive(element, span)).join(", ")}]`;
   }
 }
