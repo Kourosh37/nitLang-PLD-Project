@@ -47,3 +47,9 @@ test("homogeneous lists and map are checked and evaluated in order", () => {
   expect(execute("let base=3 print(map(lambda (x:int) -> x+base,[1,2])) let empty:List<int> = [] print(map(lambda (x:int)->x,empty))")).toEqual(["[4, 5]", "[]"]);
   for (const source of ["let x=[]", 'let x=[1,"x"]', "map(lambda (x:bool)->x,[1])", "map(lambda (x:int)->x,1)", "map(lambda (x:int)->x)"]) expect(() => execute(source)).toThrow("Type Error");
 });
+test("references alias existing locations and distinguish binding assignment", () => {
+  expect(execute("let a=10 let b=ref a b:=20 print(a) print(b)")).toEqual(["20", "<reference>"]);
+  expect(execute("let a=1 let c=2 let r=ref a let s=ref c r=s r:=9 print(a) print(c)")).toEqual(["1", "9"]);
+  expect(execute("let a=1 { let a=2 let r=ref a r:=3 print(a) } print(a)")).toEqual(["3", "1"]);
+  for (const source of ["let a=1 a:=2", 'let a=1 let r=ref a r:="x"', "ref print", "let r:Ref<int> = ref missing"]) expect(() => execute(source)).toThrow("Type Error");
+});

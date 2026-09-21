@@ -82,6 +82,13 @@ export class TypeChecker {
         if (type === undefined) this.fail("Binding type is not available yet.", node);
         return type;
       }
+      case "ReferenceExpression": {
+        const binding = this.resolution.bindings.get(node.target);
+        if (binding === undefined || !binding.mutable) this.fail("ref requires an assignable variable.", node);
+        const element = this.bindingTypes.get(binding.id);
+        if (element === undefined) this.fail("Binding type is not available yet.", node);
+        return { kind: "reference", element: this.value(element, node) };
+      }
       case "UnaryExpression": this.expect(this.expression(node.operand), node.operator === "not" ? BOOL : INT, node); return node.operator === "not" ? BOOL : INT;
       case "BinaryExpression": {
         const left = this.expression(node.left), right = this.expression(node.right);
@@ -166,6 +173,11 @@ export class TypeChecker {
         if (!this.resolution.bindings.get(node.target)?.mutable) this.fail("Cannot assign a read-only binding.", node);
         const target = this.expression(node.target);
         this.expect(this.expression(node.value, target), target, node.value); break;
+      }
+      case "ReferenceAssignmentStatement": {
+        const reference = this.expression(node.target);
+        if (reference.kind !== "reference") this.fail("':=' target must have Ref type.", node.target);
+        this.expect(this.expression(node.value, reference.element), reference.element, node.value); break;
       }
       case "IfStatement":
         this.expect(this.expression(node.condition), BOOL, node.condition);

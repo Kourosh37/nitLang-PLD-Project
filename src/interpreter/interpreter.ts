@@ -4,7 +4,7 @@ import { PRINT_ID } from "../semantic/resolver";
 import { Environment } from "../runtime/environment";
 import { Store } from "../runtime/store";
 import { applyBinary, applyUnary, formatPrimitive, requireBoolean } from "../runtime/primitive-operations";
-import { intValue, boolValue, stringValue, listValue, VOID } from "../runtime/values";
+import { intValue, boolValue, stringValue, listValue, referenceValue, VOID } from "../runtime/values";
 import type { RuntimeValue } from "../runtime/values";
 import { ControlSignal } from "../runtime/completion";
 import type { SourceSpan } from "../frontend/source-span";
@@ -43,6 +43,7 @@ export class Interpreter {
       case "BooleanLiteral": return boolValue(node.value);
       case "StringLiteral": return stringValue(node.value);
       case "Identifier": return this.store.read(environment.lookup(this.id(node), node.span), node.span);
+      case "ReferenceExpression": return referenceValue(environment.lookup(this.id(node.target), node.span));
       case "UnaryExpression": return applyUnary(node.operator, this.expression(node.operand, environment), node.span);
       case "BinaryExpression": return applyBinary(node.operator, this.expression(node.left, environment), this.expression(node.right, environment), node.span);
       case "ConditionalExpression": return this.expression(requireBoolean(this.expression(node.condition, environment), node.span) ? node.consequent : node.alternative, environment);
@@ -82,6 +83,11 @@ export class Interpreter {
       case "AssignmentStatement": {
         const location = environment.lookup(this.id(node.target), node.span);
         this.store.write(location, this.expression(node.value, environment), node.span); break;
+      }
+      case "ReferenceAssignmentStatement": {
+        const reference = this.expression(node.target, environment);
+        if (reference.kind !== "reference") throw new Error("Checked reference invariant failed.");
+        this.store.write(reference.target, this.expression(node.value, environment), node.span); break;
       }
       case "IfStatement":
         if (requireBoolean(this.expression(node.condition, environment), node.span)) this.statement(node.thenBranch, environment);

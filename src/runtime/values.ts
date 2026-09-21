@@ -1,16 +1,18 @@
 import { DiagnosticError } from "../diagnostics/diagnostic";
 import type { SourceSpan } from "../frontend/source-span";
 import type { ClosureValue } from "./closure";
+import type { Location } from "./location";
 
 export interface IntValue { readonly kind: "int"; readonly value: number }
 export interface BoolValue { readonly kind: "bool"; readonly value: boolean }
 export interface StringValue { readonly kind: "string"; readonly value: string }
 export interface VoidValue { readonly kind: "void" }
 export interface ListValue { readonly kind: "list"; readonly elements: readonly RuntimeValue[] }
+export interface ReferenceValue { readonly kind: "reference"; readonly target: Location }
 
 export type PrimitiveValue = IntValue | BoolValue | StringValue;
 /** Later milestones extend this union with closures, lists, references and objects. */
-export type RuntimeValue = PrimitiveValue | VoidValue | ClosureValue | ListValue;
+export type RuntimeValue = PrimitiveValue | VoidValue | ClosureValue | ListValue | ReferenceValue;
 
 export const MIN_INT = -Number.MAX_SAFE_INTEGER;
 export const MAX_INT = Number.MAX_SAFE_INTEGER;
@@ -35,3 +37,4 @@ export function stringValue(value: string): StringValue {
 export function listValue(elements: readonly RuntimeValue[]): ListValue {
   return Object.freeze({ kind: "list", elements: Object.freeze([...elements]) });
 }
+export function referenceValue(target: Location): ReferenceValue { return Object.freeze({ kind: "reference", target }); }
