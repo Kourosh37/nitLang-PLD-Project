@@ -2,6 +2,7 @@ import { DiagnosticError } from "../diagnostics/diagnostic";
 import type { SourceSpan } from "../frontend/source-span";
 import type { ClosureValue } from "./closure";
 import type { Location } from "./location";
+import type { BoundMethodValue, ClassValue, ObjectValue } from "./class";
 
 export interface IntValue { readonly kind: "int"; readonly value: number }
 export interface BoolValue { readonly kind: "bool"; readonly value: boolean }
@@ -12,7 +13,7 @@ export interface ReferenceValue { readonly kind: "reference"; readonly target: L
 
 export type PrimitiveValue = IntValue | BoolValue | StringValue;
 /** Later milestones extend this union with closures, lists, references and objects. */
-export type RuntimeValue = PrimitiveValue | VoidValue | ClosureValue | ListValue | ReferenceValue;
+export type RuntimeValue = PrimitiveValue | VoidValue | ClosureValue | ListValue | ReferenceValue | ClassValue | ObjectValue | BoundMethodValue;
 
 export const MIN_INT = -Number.MAX_SAFE_INTEGER;
 export const MAX_INT = Number.MAX_SAFE_INTEGER;

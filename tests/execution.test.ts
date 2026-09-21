@@ -53,3 +53,8 @@ test("references alias existing locations and distinguish binding assignment", (
   expect(execute("let a=1 { let a=2 let r=ref a r:=3 print(a) } print(a)")).toEqual(["3", "1"]);
   for (const source of ["let a=1 a:=2", 'let a=1 let r=ref a r:="x"', "ref print", "let r:Ref<int> = ref missing"]) expect(() => execute(source)).toThrow("Type Error");
 });
+test("classes allocate field locations, bind this, initialize and call methods", () => {
+  expect(execute("class Point { let x:int let y:int func init(a:int,b:int)={this.x=a this.y=b} func move(dx:int,dy:int)={this.x=this.x+dx this.y=this.y+dy} func sum():int={return this.x+this.y} } let p=new Point(2,3) p.move(1,2) print(p.sum())")).toEqual(["8"]);
+  expect(execute("class Box { let value:int func init(x:int)={this.value=x} } let a=new Box(1) let b=a b.value=9 print(a.value) print(a==b)")).toEqual(["9", "true"]);
+  for (const source of ["class C { let x:int } new C()", "class C { let x:int func init()={this.x=true} }", "class C { let x:int let x:int }", "class C { func init(x:int)={} } new C()", "class C {} let c=new C() c.missing"]) expect(() => execute(source)).toThrow();
+});

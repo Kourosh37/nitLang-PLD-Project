@@ -35,6 +35,7 @@ export function applyUnary(operator: UnaryOperator, operand: RuntimeValue, span:
 }
 
 function equality(left: RuntimeValue, right: RuntimeValue, span: SourceSpan): boolean {
+  if (left.kind === "object" && right.kind === "object") return left === right;
   if ((left.kind !== "int" && left.kind !== "bool" && left.kind !== "string") ||
       (right.kind !== "int" && right.kind !== "bool" && right.kind !== "string") || left.kind !== right.kind) {
     fail(`Equality requires matching primitive types; received ${left.kind} and ${right.kind}.`, span);
@@ -76,5 +77,8 @@ export function formatPrimitive(value: RuntimeValue, span: SourceSpan): string {
     case "closure": return "<function>";
     case "list": return `[${value.elements.map((element) => formatPrimitive(element, span)).join(", ")}]`;
     case "reference": return "<reference>";
+    case "class": return `<class ${value.name}>`;
+    case "object": return `<${value.classValue.name} object>`;
+    case "bound-method": return "<function>";
   }
 }

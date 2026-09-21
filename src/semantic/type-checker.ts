@@ -12,6 +12,7 @@ export class TypeChecker {
   readonly types = new WeakMap<object, Type>();
   readonly bindingTypes = new Map<number, Type>([[PRINT_ID, { kind: "builtin", name: "print" }], [MAP_ID, { kind: "builtin", name: "map" }]]);
   constructor(readonly resolution: Resolution) {}
+  private readonly classes = new Map<number, Type & { kind: "class" }>();
   fail(message: string, node: C.Node): never { throw new DiagnosticError({ category: "Type Error", message, span: node.span }); }
   id(node: C.Node): number {
     const binding = this.resolution.bindings.get(node);
@@ -82,6 +83,22 @@ export class TypeChecker {
         if (type === undefined) this.fail("Binding type is not available yet.", node);
         return type;
       }
+      case "MemberExpression": {
+        const object = this.expression(node.object);
+        if (object.kind !== "class") this.fail("Member access requires an object.", node.object);
+        const field = object.fields.get(node.member.name); if (field !== undefined) return field;
+        const method = object.methods.get(node.member.name); if (method !== undefined && node.member.name !== "init") return method;
+        this.fail(`Unknown member '${node.member.name}'.`, node.member);
+      }
+      case "NewExpression": {
+        const type = this.bindingTypes.get(this.id(node.className));
+        if (type?.kind !== "class") this.fail("new requires a class name.", node.className);
+        const init = type.methods.get("init");
+        const parameters = init?.parameters ?? [];
+        if (node.arguments.length !== parameters.length) this.fail("Wrong constructor argument count.", node);
+        node.arguments.forEach((arg, i) => { const p = parameters[i]; if (p !== undefined) this.expect(this.expression(arg, p), p, arg); });
+        return type;
+      }
       case "ReferenceExpression": {
         const binding = this.resolution.bindings.get(node.target);
         if (binding === undefined || !binding.mutable) this.fail("ref requires an assignable variable.", node);
@@ -93,7 +110,7 @@ export class TypeChecker {
       case "BinaryExpression": {
         const left = this.expression(node.left), right = this.expression(node.right);
         if (node.operator === "==" || node.operator === "!=") {
-          if (!["int", "bool", "string"].includes(left.kind)) this.fail("Invalid equality operands.", node);
+          if (!["int", "bool", "string", "class"].includes(left.kind)) this.fail("Invalid equality operands.", node);
           this.expect(right, left, node); return BOOL;
         }
         this.expect(left, INT, node.left); this.expect(right, INT, node.right);
@@ -145,7 +162,7 @@ export class TypeChecker {
         node.arguments.forEach((arg, i) => { const parameter = callee.parameters[i]; if (parameter !== undefined) this.expect(this.expression(arg, parameter), parameter, arg); });
         return callee.result;
       }
-      default: this.fail(`Static checking for ${node.kind} is not implemented yet.`, node);
+      default: throw new Error("Unsupported expression reached the checker.");
     }
   }
   statement(node: C.Statement): void {
@@ -169,7 +186,10 @@ export class TypeChecker {
         this.returns.values.push(type); break;
       }
       case "AssignmentStatement": {
-        if (node.target.kind !== "Identifier") this.fail("Field assignment is not implemented yet.", node);
+        if (node.target.kind === "MemberExpression") {
+          const field = this.expression(node.target);
+          this.expect(this.expression(node.value, field), field, node.value); break;
+        }
         if (!this.resolution.bindings.get(node.target)?.mutable) this.fail("Cannot assign a read-only binding.", node);
         const target = this.expression(node.target);
         this.expect(this.expression(node.value, target), target, node.value); break;
@@ -188,8 +208,26 @@ export class TypeChecker {
   }
   check(program: C.Program): CheckedProgram {
     for (const node of program.body) {
-      if (node.kind === "ClassDeclaration") this.fail("Classes are not implemented yet.", node);
-      this.statement(node);
+      if (node.kind !== "ClassDeclaration") { this.statement(node); continue; }
+      if (node.parent !== null) this.fail("Inheritance is implemented in Milestone 14.", node.parent);
+      const type: Type & { kind: "class" } = { kind: "class", id: this.id(node.name), name: node.name.name, parent: null, fields: new Map(), methods: new Map() };
+      this.classes.set(type.id, type); this.bindingTypes.set(type.id, type);
+      for (const member of node.members) {
+        if (member.kind === "FieldDeclaration") {
+          if (type.fields.has(member.name.name) || type.methods.has(member.name.name)) this.fail(`Duplicate member '${member.name.name}'.`, member);
+          type.fields.set(member.name.name, this.value(this.annotation(member.annotation), member));
+        } else {
+          if (type.fields.has(member.name.name) || type.methods.has(member.name.name)) this.fail(`Duplicate member '${member.name.name}'.`, member);
+          const signature = this.signature(member); if (member.name.name === "init") signature.result = VOID_TYPE;
+          type.methods.set(member.name.name, signature);
+        }
+      }
+      for (const member of node.members) if (member.kind === "FunctionDeclaration") {
+        const receiver = this.resolution.receivers.get(member); if (receiver === undefined) throw new Error("Missing method receiver binding.");
+        this.bindingTypes.set(receiver.id, type);
+        const signature = type.methods.get(member.name.name); if (signature === undefined) throw new Error("Missing method signature.");
+        this.functionBody(member, signature);
+      }
     }
     return { program, resolution: this.resolution, types: this.types };
   }
