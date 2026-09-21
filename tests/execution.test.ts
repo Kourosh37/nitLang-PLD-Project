@@ -62,3 +62,8 @@ test("single inheritance supports inherited fields, methods and subtyping", () =
   expect(execute("class Animal { let name:string func init(n:string)={this.name=n} func speak():string={return this.name} } class Dog extends Animal {} let a:Animal=new Dog(\"Rex\") print(a.speak())")).toEqual(["Rex"]);
   for (const source of ["class A extends Missing {}", "class A extends A {}", "class A { let x:int } class B extends A { let x:int }", "class A { func f(x:int):int={return x} } class B extends A { func f(x:bool):int={return 1} }"]) expect(() => execute(source)).toThrow("Type Error");
 });
+test("dynamic dispatch starts at the runtime class across three levels", () => {
+  const source = "class A { func speak():string={return \"A\"} func describe():string={return this.speak()} } class B extends A { func speak():string={return \"B\"} } class C extends B { func speak():string={return \"C\"} } let a:A=new C() print(a.speak()) print(a.describe())";
+  expect(execute(source)).toEqual(["C", "C"]);
+  expect(execute("class A { let x:int func init(v:int)={this.x=v} func get():int={return this.x} } class B extends A {} class C extends B {} let a:A=new C(7) print(a.get())")).toEqual(["7"]);
+});
