@@ -35,3 +35,10 @@ test("named functions recurse and validate all return paths", () => {
   expect(execute("func add(x:int,y:int) = { return x+y } print(add(2,3)) func p() = { return; } p()")).toEqual(["5"]);
   for (const source of ["func f(x:int):int = { if x>0 then { return x } }", 'func f() = { return 1; return "x" }', "func f() = { return f() }", "return 1", "func f(x:int) = {} f()", 'func f(x:int) = {} f("x")']) expect(() => execute(source)).toThrow("Type Error");
 });
+test("lambdas are first class and closures retain lexical locations", () => {
+  expect(execute("func makeAdder(x:int) = { return lambda (y:int) -> x+y } let addFive=makeAdder(5) print(addFive(3))")).toEqual(["8"]);
+  expect(execute("let a=2 let b=3 let f=lambda (x:int) -> a+b+x { let a=100 print(f(4)) }")).toEqual(["9"]);
+  expect(execute("func outer(x:int) = { return lambda (y:int) -> lambda (z:int) -> x+y+z } let f=outer(1)(2) print(f(3))")).toEqual(["6"]);
+  expect(execute("let x=1 let f=lambda () -> x x=7 print(f())")).toEqual(["7"]);
+  expect(() => execute("let f=lambda (x:int) -> x f(true)")).toThrow("Type Error");
+});

@@ -46,6 +46,7 @@ export class Interpreter {
       case "UnaryExpression": return applyUnary(node.operator, this.expression(node.operand, environment), node.span);
       case "BinaryExpression": return applyBinary(node.operator, this.expression(node.left, environment), this.expression(node.right, environment), node.span);
       case "ConditionalExpression": return this.expression(requireBoolean(this.expression(node.condition, environment), node.span) ? node.consequent : node.alternative, environment);
+      case "LambdaExpression": return { kind: "closure", parameters: node.parameters, body: node.body, environment };
       case "CallExpression": {
         if (node.callee.kind === "Identifier" && this.id(node.callee) === PRINT_ID) {
           const arg = node.arguments[0];

@@ -96,6 +96,14 @@ export class TypeChecker {
         this.expect(this.expression(node.condition), BOOL, node.condition);
         this.expect(this.expression(node.consequent), BOOL, node.consequent);
         this.expect(this.expression(node.alternative), BOOL, node.alternative); return BOOL;
+      case "LambdaExpression": {
+        const parameters = node.parameters.map((parameter) => {
+          const type = this.value(this.annotation(parameter.annotation), parameter);
+          this.bindingTypes.set(this.id(parameter.name), type);
+          return type;
+        });
+        return { kind: "function", parameters, result: this.value(this.expression(node.body), node.body) };
+      }
       case "CallExpression": {
         const callee = this.expression(node.callee, undefined, true);
         if (callee.kind === "builtin" && callee.name === "print") {
