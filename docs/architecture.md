@@ -1,10 +1,7 @@
 # NITLang architecture
 
-Status: Milestones 0-4 are implemented under the dependency adjustment (tooling,
-ast CLI, source locations, tokens, lexer, Surface AST, parser, syntax diagnostics,
-tagged primitive values and primitive operations). Other compiler/runtime modules below
-are planned contracts.
-GROUP_SIZE = 1. Pattern matching is the single planned extension.
+Status: Milestones 0-23 are implemented. The mandatory tree interpreter, VM
+subset and GROUP_SIZE=1 pattern-matching extension are operational.
 
 ```mermaid
 flowchart TD
@@ -28,7 +25,7 @@ flowchart TD
 | src/semantic | Resolution, return analysis, type checking |
 | src/runtime | Locations, store, environments, values, completions |
 | src/interpreter | Core AST execution only |
-| src/stdlib | Typed builtin callable definitions for print and map |
+| semantic/interpreter builtins | Typed print and map behavior |
 | src/bytecode | Typed instructions, chunks, compiler, disassembler |
 | src/vm | Operand stack, instruction pointer, scope stack |
 

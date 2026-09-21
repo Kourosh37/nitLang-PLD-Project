@@ -192,7 +192,7 @@ After mandatory features pass, add match expressions with literal patterns
 must match its primitive type; duplicate patterns/unreachable arms are rejected.
 Bool matches require both booleans or a wildcard; int/string require a wildcard.
 All arm result types must be compatible using return-type joining. No pattern
-bindings, guards or destructuring. This is planned for Milestone 21. Arms may be
+bindings, guards or destructuring. This was implemented in Milestone 21. Arms may be
 separated by semicolons; a separator is required where the next pattern could
 continue the preceding expression (notably a negative integer). `_` is a wildcard
 only in pattern position, and an ordinary identifier elsewhere.

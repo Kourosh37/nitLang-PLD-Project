@@ -1,9 +1,7 @@
 # Implementation plan and progress
 
-Milestones 0-4 are complete under the documented dependency adjustment. The user authorized each next milestone after
-committing its predecessor. The frontend produces Surface AST through the ast
-command, and primitive operation helpers are tested. Variable/block execution
-remains deferred to the storage/lowering/checking milestones. Next: M5 memory model.
+Milestones 0-23 are complete. M24 documentation/cleanup is in progress; M25 is
+the final hidden-case stress suite and requirements matrix.
 
 For every milestone: explain semantics/files/decisions before editing; implement;
 typecheck and run existing tests; add focused tests; rerun the full suite; fix
@@ -16,25 +14,7 @@ failures before proceeding. Record commands, results, limitations and next step.
 | 2 (complete) | Lexer; tokens, escapes, malformed source, source positions |
 | 3 (complete) | Surface AST/parser/precedence; syntax and associativity tests |
 | 4 (complete) | Primitive/variable/block contracts; AST and operation tests, no unchecked execution |
-| 5 | Environment/Store/Location; fresh locations, shadowing, mutation |
-| 6 | Separate Core AST/desugaring; hygiene, once-only bounds, short circuit structure |
-| 7 | Symbol tables/resolver/typechecker; static rejection and checked primitive execution |
-| 8 | If/while/assignment; branch typing, loops, short circuit and for integration |
-| 9 | Functions/return/recursion; arity, return analysis, factorial |
-| 10 | Lambdas/closures; single/multiple captures, shadowing, nested escaping closures |
-| 11 | Lists/map; empty/heterogeneous lists, callback typing, ordering |
-| 12 | References; aliasing, assignment versus write-through, scope |
-| 13 | Classes/objects/this/init; field locations and constructor validation |
-| 14 | Inheritance/overrides/subtyping; invalid parents/cycles/signatures |
-| 15 | Dynamic dispatch; three levels, inherited field access, bound methods |
-| 16 | Throw/try/catch; nested calls/loops, return propagation, uncaught diagnostics |
-| 17 | Diagnostic hardening; categories/spans, no expected host traces |
-| 18 | Bytecode/compiler/disassembler; stack effects, patched jumps, subset rejection |
-| 19 | VM; operand and scope stack, loops, error behavior |
-| 20 | Differential tests; same actual source on interpreter and VM |
-| 21 | Pattern matching extension; exhaustiveness, types, single evaluation |
-| 22 | Formal operational and denotational semantics matching implementation |
-| 23 | Hoare assignment and conditional/loop examples with reasoning |
+| 5-23 (complete) | Memory, lowering, semantics, full interpreter, VM, extension and formal documents |
 | 24 | README, memory/VM docs, examples, teaching notes, cleanup |
 | 25 | Hidden-case style combinations and final requirements validation matrix |
 
