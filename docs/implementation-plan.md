@@ -1,8 +1,8 @@
 # Implementation plan and progress
 
-Milestones 0 and 1 are complete. The user authorized Milestone 1 after committing
-Milestone 0. The specification and source-location infrastructure are complete;
-language execution is not implemented. Next delivery: Milestone 2, the lexer.
+Milestones 0-2 are complete. The user authorized each next milestone after
+committing its predecessor. Specification, source locations, lexer and lexical
+diagnostics are complete; language execution is not implemented. Next: M3 parser.
 
 For every milestone: explain semantics/files/decisions before editing; implement;
 typecheck and run existing tests; add focused tests; rerun the full suite; fix
@@ -12,7 +12,7 @@ failures before proceeding. Record commands, results, limitations and next step.
 | --- | --- |
 | 0 (complete) | Strict TS/Bun setup, CLI skeleton, design drafts; CLI unit/process tests |
 | 1 (complete) | Final specification/EBNF and SourceSpan; position/span tests |
-| 2 | Lexer; tokens, escapes, malformed source, source positions |
+| 2 (complete) | Lexer; tokens, escapes, malformed source, source positions |
 | 3 | Surface AST/parser/precedence; syntax and associativity tests |
 | 4 | Primitive/variable/block contracts; AST and operation tests, no unchecked execution |
 | 5 | Environment/Store/Location; fresh locations, shadowing, mutation |
@@ -37,8 +37,8 @@ failures before proceeding. Record commands, results, limitations and next step.
 | 24 | README, memory/VM docs, examples, teaching notes, cleanup |
 | 25 | Hidden-case style combinations and final requirements validation matrix |
 
-Future fixture directories: tests/fixtures/valid, tests/fixtures/invalid, examples.
-Populate them with executable source when the relevant pipeline exists. Tests
+Lexical fixtures now exist in tests/fixtures/valid and tests/fixtures/invalid.
+Add executable examples when the relevant pipeline exists. Tests
 must never treat example filenames or exact source strings as runtime semantics.
 
 Final matrix columns: requirement, implementation files, tests, example,

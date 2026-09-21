@@ -1,7 +1,7 @@
 # NITLang language specification v1
 
 Finalized in Milestone 1. This is the target contract, not a list of implemented
-features. Only tooling, the CLI skeleton and source locations are implemented.
+features. Tooling, the CLI skeleton, source locations and lexing are implemented.
 Changes to this contract require an explicit design decision and matching tests.
 
 ## Lexical rules

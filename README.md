@@ -4,9 +4,10 @@ An educational programming language implemented incrementally in strict TypeScri
 using Bun. The target is a statically checked tree-walk interpreter plus a stack
 VM for a smaller subset, with explicit lexical environments and store locations.
 
-**Current status: Milestone 1.** Project tooling, a tested CLI skeleton, finalized
-language specification and immutable source locations are available.
-Lexer, parser, checker, interpreter and VM are not implemented yet.
+**Current status: Milestone 2.** Project tooling, a tested CLI skeleton, finalized
+language specification, immutable source locations, a hand-written lexer and
+structured lexical diagnostics are available. Parser, checker, interpreter and
+VM are not implemented yet.
 Language examples below illustrate the specification; they cannot run yet.
 
 ## Requirements and setup
@@ -65,8 +66,9 @@ print, conditions and loops. Pattern matching is the extension for GROUP_SIZE = 
 
 ```text
 src/cli/       CLI interface and Bun entry point
-src/frontend/  SourcePosition, SourceSpan and indexed SourceFile
-tests/         Source-location, CLI unit and actual process tests
+src/frontend/  Source positions, indexed source text, tokens and lexer
+src/diagnostics/ Structured diagnostics and text formatting
+tests/         Lexer, diagnostics, source locations, CLI and .nit fixtures
 docs/          Language specification, architecture and milestone reports
 ```
 
@@ -74,8 +76,8 @@ Read the [language specification](docs/language-spec.md),
 [complete EBNF](docs/grammar.md), [architecture](docs/architecture.md),
 [design decisions](docs/design-decisions.md), and
 [implementation plan](docs/implementation-plan.md), plus the implemented
-[source-location contract](docs/source-locations.md).
+[source-location contract](docs/source-locations.md) and [lexer API](docs/lexer.md).
 
 Future stages add source fixtures, examples, runtime/memory documentation, VM
 instructions, formal semantics, Hoare reasoning and a verified requirements matrix.
-Next: Milestone 2, the hand-written lexer with source spans and lexical diagnostics.
+Next: Milestone 3, Surface AST and recursive descent / precedence-based parsing.

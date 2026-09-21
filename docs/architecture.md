@@ -1,7 +1,8 @@
 # NITLang architecture
 
-Status: Milestones 0 and 1 are implemented (tooling, CLI skeleton, source locations).
-Compiler/runtime modules below are planned contracts.
+Status: Milestones 0-2 are implemented (tooling, CLI skeleton, source locations,
+tokens, lexer and lexical diagnostics). Other compiler/runtime modules below
+are planned contracts.
 GROUP_SIZE = 1. Pattern matching is the single planned extension.
 
 ```mermaid
@@ -63,3 +64,11 @@ provides diagnostic line content without terminators. `SourcePosition` and
 `SourceSpan` are data-only interfaces in a separate module, so tokens, ASTs and
 diagnostics will not depend on the lexer or filesystem. No newline normalization
 is allowed because offsets must continue to index the original source text.
+
+## Lexical boundary
+
+The lexer accepts SourceFile and returns a discriminated success/failure result.
+Success contains an immutable typed token stream ending in EOF; failure contains
+one structured Syntax Error and no tokens. Literal conversion happens here;
+expression parsing and static semantics do not. The diagnostic module depends
+only on source-span types and can be reused by later phases. See lexer.md.
