@@ -20,6 +20,12 @@ export class Interpreter {
     if (binding === undefined) throw new Error("Missing binding after checking.");
     return binding.id;
   }
+  method(classValue: ClassValue, name: string): C.FunctionDeclaration | undefined {
+    return classValue.methods.get(name) ?? (classValue.parent === null ? undefined : this.method(classValue.parent, name));
+  }
+  allFields(classValue: ClassValue): string[] {
+    return [...(classValue.parent === null ? [] : this.allFields(classValue.parent)), ...classValue.fields];
+  }
   invoke(callee: RuntimeValue, args: readonly RuntimeValue[], span: SourceSpan): RuntimeValue {
     if (callee.kind === "bound-method") {
       const receiver = this.checked.resolution.receivers.get(callee.method);
@@ -68,7 +74,7 @@ export class Interpreter {
         if (object.kind !== "object") throw new Error("Checked member invariant failed.");
         const field = object.fields.get(node.member.name);
         if (field !== undefined) return this.store.read(field, node.span);
-        const method = object.classValue.methods.get(node.member.name);
+        const method = this.method(object.classValue, node.member.name);
         if (method === undefined) throw new Error("Checked method invariant failed.");
         return { kind: "bound-method", method, receiver: object, environment: object.classValue.environment };
       }
@@ -76,9 +82,9 @@ export class Interpreter {
         const value = this.store.read(environment.lookup(this.id(node.className), node.span), node.span);
         if (value.kind !== "class") throw new Error("Checked constructor invariant failed.");
         const fields = new Map<string, import("../runtime/location").Location>();
-        for (const name of value.fields) fields.set(name, this.store.allocate());
+        for (const name of this.allFields(value)) fields.set(name, this.store.allocate());
         const object: ObjectValue = { kind: "object", classValue: value, fields };
-        const init = value.methods.get("init");
+        const init = this.method(value, "init");
         if (init !== undefined) this.invoke({ kind: "bound-method", method: init, receiver: object, environment: value.environment }, node.arguments.map((a) => this.expression(a, environment)), node.span);
         for (const location of fields.values()) this.store.read(location, node.span);
         return object;
@@ -142,7 +148,12 @@ export class Interpreter {
       if (node.kind === "ClassDeclaration") {
         const methods = new Map(node.members.filter((m): m is C.FunctionDeclaration => m.kind === "FunctionDeclaration").map((m) => [m.name.name, m]));
         const fields = node.members.filter((m) => m.kind === "FieldDeclaration").map((m) => m.name.name);
-        const value: ClassValue = { kind: "class", name: node.name.name, parent: null, fields, methods, environment };
+        let parent: ClassValue | null = null;
+        if (node.parent !== null) {
+          const candidate = this.store.read(environment.lookup(this.id(node.parent), node.span), node.span);
+          if (candidate.kind !== "class") throw new Error("Checked parent invariant failed."); parent = candidate;
+        }
+        const value: ClassValue = { kind: "class", name: node.name.name, parent, fields, methods, environment };
         environment.define(this.id(node.name), this.store.allocate(value), node.span);
       } else this.statement(node, environment);
     }

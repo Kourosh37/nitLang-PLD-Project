@@ -58,3 +58,7 @@ test("classes allocate field locations, bind this, initialize and call methods",
   expect(execute("class Box { let value:int func init(x:int)={this.value=x} } let a=new Box(1) let b=a b.value=9 print(a.value) print(a==b)")).toEqual(["9", "true"]);
   for (const source of ["class C { let x:int } new C()", "class C { let x:int func init()={this.x=true} }", "class C { let x:int let x:int }", "class C { func init(x:int)={} } new C()", "class C {} let c=new C() c.missing"]) expect(() => execute(source)).toThrow();
 });
+test("single inheritance supports inherited fields, methods and subtyping", () => {
+  expect(execute("class Animal { let name:string func init(n:string)={this.name=n} func speak():string={return this.name} } class Dog extends Animal {} let a:Animal=new Dog(\"Rex\") print(a.speak())")).toEqual(["Rex"]);
+  for (const source of ["class A extends Missing {}", "class A extends A {}", "class A { let x:int } class B extends A { let x:int }", "class A { func f(x:int):int={return x} } class B extends A { func f(x:bool):int={return 1} }"]) expect(() => execute(source)).toThrow("Type Error");
+});

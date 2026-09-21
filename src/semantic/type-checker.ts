@@ -209,16 +209,24 @@ export class TypeChecker {
   check(program: C.Program): CheckedProgram {
     for (const node of program.body) {
       if (node.kind !== "ClassDeclaration") { this.statement(node); continue; }
-      if (node.parent !== null) this.fail("Inheritance is implemented in Milestone 14.", node.parent);
-      const type: Type & { kind: "class" } = { kind: "class", id: this.id(node.name), name: node.name.name, parent: null, fields: new Map(), methods: new Map() };
+      let parent: (Type & { kind: "class" }) | null = null;
+      if (node.parent !== null) {
+        const candidate = this.bindingTypes.get(this.id(node.parent));
+        if (candidate?.kind !== "class") this.fail("Parent must be a previously declared class.", node.parent);
+        if (candidate.id === this.id(node.name)) this.fail("A class cannot inherit from itself.", node.parent);
+        parent = candidate;
+      }
+      const type: Type & { kind: "class" } = { kind: "class", id: this.id(node.name), name: node.name.name, parent, fields: new Map(parent?.fields), methods: new Map(parent?.methods) };
       this.classes.set(type.id, type); this.bindingTypes.set(type.id, type);
       for (const member of node.members) {
         if (member.kind === "FieldDeclaration") {
           if (type.fields.has(member.name.name) || type.methods.has(member.name.name)) this.fail(`Duplicate member '${member.name.name}'.`, member);
           type.fields.set(member.name.name, this.value(this.annotation(member.annotation), member));
         } else {
-          if (type.fields.has(member.name.name) || type.methods.has(member.name.name)) this.fail(`Duplicate member '${member.name.name}'.`, member);
+          if (type.fields.has(member.name.name)) this.fail(`Duplicate member '${member.name.name}'.`, member);
           const signature = this.signature(member); if (member.name.name === "init") signature.result = VOID_TYPE;
+          const overridden = parent?.methods.get(member.name.name);
+          if (overridden !== undefined && member.name.name !== "init" && !isAssignable(signature, overridden)) this.fail(`Incompatible override '${member.name.name}'.`, member);
           type.methods.set(member.name.name, signature);
         }
       }
