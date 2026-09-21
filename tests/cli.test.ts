@@ -19,12 +19,12 @@ describe("CLI interface", () => {
       expect(result.status).toBe(0);
       expect(result.stderr).toEqual([]);
       expect(result.stdout.join("\n")).toContain("Usage:");
-      expect(result.stdout.join("\n")).toContain("language execution is not implemented yet");
+      expect(result.stdout.join("\n")).toContain("implemented subset");
     });
   }
 
   for (const command of commands) {
-    if (command !== "ast") test(`${command} reports unavailable execution`, () => {
+    if (command === "vm" || command === "bytecode") test(`${command} reports unavailable execution`, () => {
       const result = invoke([command, "path with spaces/program.nit"]);
       expect(result.status).toBe(2);
       expect(result.stdout).toEqual([]);

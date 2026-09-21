@@ -1,6 +1,8 @@
 import { formatDiagnostic } from "../diagnostics/diagnostic";
 import { parse } from "../frontend/parser";
 import { SourceFile } from "../frontend/source-file";
+import { desugar } from "../desugar/desugar";
+import { check, run } from "../pipeline";
 
 export const commands = ["run", "check", "ast", "core-ast", "bytecode", "vm"] as const;
 export type Command = (typeof commands)[number];
@@ -26,7 +28,7 @@ Commands:
 Options:
   -h, --help Show this help
 
-The ast command is available; language execution is not implemented yet.`;
+Commands run, check, ast and core-ast are available for the implemented subset.`;
 
 function isCommand(value: string): value is Command {
   return commands.some((command) => command === value);
@@ -46,18 +48,24 @@ export function runCli(args: readonly string[], io: CliIO): number {
     io.stderr(`CLI Error: expected '${command} <file.nit>'. Use --help.`);
     return 2;
   }
-  if (command === "ast") {
+  if (command === "ast" || command === "core-ast" || command === "check" || command === "run") {
     const input = io.readFile(file);
     if (!input.ok) {
       io.stderr(`CLI Error: cannot read ${JSON.stringify(file)}: ${input.message}`);
       return 2;
     }
-    const result = parse(new SourceFile(file, input.text));
+    const source = new SourceFile(file, input.text);
+    if (command === "check" || command === "run") {
+      const result = command === "check" ? check(source) : run(source, io.stdout);
+      if (!result.ok) { io.stderr(formatDiagnostic(result.diagnostic)); return 1; }
+      return 0;
+    }
+    const result = parse(source);
     if (!result.ok) {
       io.stderr(formatDiagnostic(result.diagnostic));
       return 1;
     }
-    io.stdout(JSON.stringify(result.program, null, 2));
+    io.stdout(JSON.stringify(command === "core-ast" ? desugar(result.program) : result.program, null, 2));
     return 0;
   }
   io.stderr(`CLI Error: '${command}' is not implemented yet.`);
