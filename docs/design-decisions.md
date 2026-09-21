@@ -5,7 +5,7 @@ finalized in Milestone 1; changes must update docs and tests.
 
 | Question | Decision and reason |
 | --- | --- |
-| Project size | GROUP_SIZE = 1; match is the only planned extension. |
+| Project size | GROUP_SIZE = 1; match is the completed extension. |
 | Statement boundaries | Whitespace-independent grammar and optional semicolons; bare return requires a semicolon to avoid newline-sensitive ambiguity. |
 | Integers | Safe signed integers, checked overflow, truncating division; straightforward portable TS/VM semantics. |
 | Logical negation | Add explicit `not` alongside required and/or. |
@@ -25,7 +25,7 @@ finalized in Milestone 1; changes must update docs and tests.
 | Memory ownership | Per-execution store, no explicit GC initially; closures retain locations until run finishes. |
 | VM scope | Reject unsupported constructs before any execution; no interpreter fallback. |
 | Hygiene | Generated binding identities cannot collide with source identifiers. |
-| Pattern matching | Primitive literal patterns and final wildcard, static exhaustiveness; deferred until mandatory implementation is stable. |
+| Pattern matching | Primitive literal patterns and final wildcard with static exhaustiveness; implemented after mandatory features stabilized. |
 
 ## Dependency adjustment
 
@@ -33,10 +33,10 @@ The prompt requires design documents before code, while milestones put setup
 before specification. Write specification/grammar/architecture drafts first in
 Milestone 0, then finalize them and implement SourceSpan in Milestone 1.
 
-Milestone 4 describes execution before the mandated memory model, lowering and
-checker exist. It will define/test primitive and binding contracts without exposing
-an unchecked run path. Milestones 5-7 provide storage, Core lowering and checking;
-only then enable primitive end-to-end execution. This avoids a temporary
+Milestone 4 described execution before the mandated memory model, lowering and
+checker existed. It defined/tested primitive and binding contracts without exposing
+an unchecked run path. Milestones 5-7 provided storage, Core lowering and checking;
+only then enabled primitive end-to-end execution. This avoided a temporary
 name-to-value evaluator that would violate the assignment invariants.
 
 ## Teaching notes plan
@@ -46,7 +46,7 @@ alternative considered, runtime behavior, static checking, and a professor Q&A.
 Example: Why split Environment and Store? Environment identifies a binding's
 location; Store holds its mutable contents. Two references can alias that location
 while shadowed variables allocate independent ones. A direct name-to-value map
-would obscure aliasing. This is a design explanation, not implemented runtime code.
+would obscure aliasing. The implemented runtime follows this model.
 
 ## Milestone 1 clarifications
 

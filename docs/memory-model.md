@@ -1,20 +1,18 @@
 # Environment, store and binding contract
 
-Status: this is the M4 contract for M5 implementation. No Environment, Store or
-Location class is implemented yet, and none of the runtime scenarios below has
-been executed through a checked interpreter. Primitive value objects already
-exist in src/runtime/values.ts.
+Implemented from Milestone 5 onward by Location, Store and Environment, then used
+by the checked interpreter for variables, closures, references and object fields.
 
 ## Concepts
 
 | Concept | Meaning |
 | --- | --- |
-| Value | Immutable tagged data, or a future composite language value |
+| Value | Tagged primitive, closure, list, reference, class, object or bound method |
 | Variable | A lexical binding with a stable location and an assignable type |
 | Location | Dedicated identity for a store cell, not a source position |
 | Environment | Lexical binding identity -> Location, with an enclosing environment |
 | Store | Location -> RuntimeValue, owned by one execution |
-| Reference | Future value containing an existing Location |
+| Reference | Value containing an existing Location |
 
 Runtime Environment and static SymbolTable are different structures. Resolution
 decides which binding a source occurrence denotes; runtime lookup finds that
@@ -42,7 +40,7 @@ Entering a block creates a child environment. Statements run in order; name
 lookup searches the lexical chain. A shadowing let always allocates a new cell.
 Ordinary assignment resolves its target location before evaluating the right
 side, then updates that cell without allocating a replacement binding. Scope
-exit removes the active environment link, not locations still retained by future
+exit removes the active environment link, not locations retained by
 closures or references. An initial per-execution store may keep all cells until
 the run finishes; garbage collection is deferred.
 
@@ -53,9 +51,8 @@ that contains the ReferenceValue itself.
 
 ## Acceptance scenarios
 
-The fixture tests/fixtures/valid/primitive-bindings.nit currently verifies parsing
-of nested declarations and initializer dependencies. Once the checked execution
-pipeline exists, its required output is:
+The fixture tests/fixtures/valid/primitive-bindings.nit verifies nested declarations,
+initializer dependencies, checked interpreter execution and VM execution. Its output is:
 
 ```text
 inner
@@ -67,8 +64,7 @@ NITLang
 
 The inner count initializer reads the outer count (10), then allocates a distinct
 cell holding 12. The inner enabled similarly reads true then stores false in a
-new cell. The innermost title does not change the outer title. These are required
-future outcomes, not currently passing runtime assertions.
+new cell. The innermost title does not change the outer title.
 
 Additional acceptance cases for M5/M7:
 

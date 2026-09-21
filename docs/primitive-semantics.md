@@ -1,14 +1,14 @@
 # Primitive values and operations
 
-Implemented in Milestone 4 as reusable runtime operations, not an interpreter.
-Source execution remains disabled until storage, Core lowering and checking exist.
+Implemented in Milestone 4 as reusable runtime operations. Later milestones use
+them from both the checked tree interpreter and stack VM.
 
 ## Values
 
 `src/runtime/values.ts` defines IntValue, BoolValue, StringValue and VoidValue as
-readonly tagged objects. PrimitiveValue is the first three; RuntimeValue currently
-adds VoidValue and will gain composite variants in later milestones. These are
-runtime representations, distinct from Surface type annotations and future
+readonly tagged objects. PrimitiveValue is the first three; RuntimeValue also
+includes void, closures, lists, references, classes, objects and bound methods.
+These are runtime representations, distinct from Surface type annotations and
 semantic types. Factories freeze values; VOID is an explicit singleton with no
 host undefined payload. Bool factories reuse immutable true/false values.
 
@@ -38,8 +38,7 @@ Each operation accepts an originating SourceSpan for a DiagnosticError. Wrong
 operand kinds are defensive Runtime Errors at this low-level boundary. M7 must
 reject those source expressions statically with Type Errors before execution;
 runtime guards do not stand in for the checker. Void cannot participate in these
-operations, comparisons, conditions or printing. Object equality will be added
-when object values exist, without changing primitive equality semantics.
+operations, comparisons, conditions or printing. Objects compare by identity.
 
 Arithmetic uses bigint intermediates to implement exact integer operations.
 Check the result against the int bounds before converting to a number. This
@@ -52,16 +51,16 @@ Equality checks compatible tags before strict comparison; strings compare their
 exact stored Unicode code-unit sequences without normalization. No string
 concatenation, truthiness, loose equality or numeric conversion is exposed as
 language semantics. `formatPrimitive` formats decimal ints, lowercase booleans
-and raw strings; a future print builtin owns the trailing output newline.
+and raw strings; the print builtin owns the trailing output newline.
 
 ## Evaluation boundary
 
-Operations accept values that a future backend has already evaluated. They do
+Operations accept values that an execution backend has already evaluated. They do
 not traverse ASTs, resolve names, allocate locations or evaluate callbacks.
 Left-to-right operand evaluation remains the execution backend's responsibility.
 There are deliberately no eager and/or operations: M6 lowers them to conditional
-Core expressions so the second operand need not execute. Both future interpreter
-and VM can reuse these primitive semantics while implementing independent control
+Core expressions so the second operand need not execute. The interpreter and VM
+reuse these primitive semantics while implementing independent control
 flow. Short-circuit execution is not tested or claimed yet.
 
 ## Variables and blocks

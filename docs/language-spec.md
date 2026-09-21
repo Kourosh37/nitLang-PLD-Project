@@ -1,9 +1,8 @@
 # NITLang language specification v1
 
-Finalized in Milestone 1. This is the target contract, not a list of implemented
-features. Tooling, source locations, lexing, Surface AST parsing and the ast CLI
-are implemented, along with primitive runtime value/operation helpers (M4).
-Semantic checking, variable storage and program execution remain future milestones.
+Finalized in Milestone 1 and implemented through Milestone 25. The specification
+is the authoritative language contract; the requirements matrix links its major
+features to implementation files and passing tests.
 Changes to this contract require an explicit design decision and matching tests.
 
 ## Lexical rules
