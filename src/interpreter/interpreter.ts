@@ -120,6 +120,17 @@ export class Interpreter {
         this.store.write(location, { kind: "closure", parameters: node.parameters, body: node.body, environment }, node.span); break;
       }
       case "ReturnStatement": throw new ControlSignal("return", node.value === null ? VOID : this.expression(node.value, environment), node.span);
+      case "ThrowStatement": throw new ControlSignal("throw", this.expression(node.value, environment), node.span);
+      case "TryStatement": {
+        try { this.statement(node.body, environment); }
+        catch (error: unknown) {
+          if (!(error instanceof ControlSignal) || error.kind !== "throw") throw error;
+          const catchEnvironment = new Environment(environment);
+          catchEnvironment.define(this.id(node.catchName), this.store.allocate(error.value), node.catchName.span);
+          for (const statement of node.catchBody.body) this.statement(statement, catchEnvironment);
+        }
+        break;
+      }
       case "AssignmentStatement": {
         if (node.target.kind === "MemberExpression") {
           const object = this.expression(node.target.object, environment);
@@ -139,7 +150,7 @@ export class Interpreter {
         if (requireBoolean(this.expression(node.condition, environment), node.span)) this.statement(node.thenBranch, environment);
         else if (node.elseBranch !== null) this.statement(node.elseBranch, environment); break;
       case "WhileStatement": while (requireBoolean(this.expression(node.condition, environment), node.span)) this.statement(node.body, environment); break;
-      default: throw new Error(`Unsupported checked statement ${node.kind}.`);
+      default: throw new Error("Unsupported checked statement.");
     }
   }
   run(): void {

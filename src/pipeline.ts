@@ -7,6 +7,8 @@ import { resolve } from "./semantic/resolver";
 import { TypeChecker } from "./semantic/type-checker";
 import type { CheckedProgram } from "./semantic/type-checker";
 import { Interpreter } from "./interpreter/interpreter";
+import { ControlSignal } from "./runtime/completion";
+import { formatPrimitive } from "./runtime/primitive-operations";
 export type Result<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly diagnostic: Diagnostic };
 export function check(source: SourceFile): Result<CheckedProgram> {
   const parsed = parse(source);
@@ -25,6 +27,7 @@ export function run(source: SourceFile, output: (text: string) => void): Result<
   try { new Interpreter(checked.value, output).run(); return { ok: true, value: undefined }; }
   catch (error: unknown) {
     if (error instanceof DiagnosticError) return { ok: false, diagnostic: error.diagnostic };
+    if (error instanceof ControlSignal && error.kind === "throw") return { ok: false, diagnostic: { category: "Runtime Error", message: `Uncaught exception: ${formatPrimitive(error.value, error.span)}`, span: error.span } };
     throw error;
   }
 }

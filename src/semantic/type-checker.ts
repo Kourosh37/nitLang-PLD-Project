@@ -141,7 +141,10 @@ export class TypeChecker {
         const callee = this.expression(node.callee, undefined, true);
         if (callee.kind === "builtin" && callee.name === "print") {
           if (node.arguments.length !== 1) this.fail("print expects one argument.", node);
-          for (const argument of node.arguments) this.value(this.expression(argument), argument);
+          for (const argument of node.arguments) {
+            const type = this.expression(argument);
+            if (type.kind !== "thrown") this.value(type, argument);
+          }
           return VOID_TYPE;
         }
         if (callee.kind === "builtin" && callee.name === "map") {
@@ -185,6 +188,12 @@ export class TypeChecker {
         if (this.returns.expected !== null) this.expect(type, this.returns.expected, node);
         this.returns.values.push(type); break;
       }
+      case "ThrowStatement": this.value(this.expression(node.value), node.value); break;
+      case "TryStatement": {
+        this.statement(node.body);
+        this.bindingTypes.set(this.id(node.catchName), { kind: "thrown" });
+        this.statement(node.catchBody); break;
+      }
       case "AssignmentStatement": {
         if (node.target.kind === "MemberExpression") {
           const field = this.expression(node.target);
@@ -203,7 +212,7 @@ export class TypeChecker {
         this.expect(this.expression(node.condition), BOOL, node.condition);
         this.statement(node.thenBranch); if (node.elseBranch !== null) this.statement(node.elseBranch); break;
       case "WhileStatement": this.expect(this.expression(node.condition), BOOL, node.condition); this.statement(node.body); break;
-      default: this.fail(`Static checking for ${node.kind} is not implemented yet.`, node);
+      default: throw new Error("Unsupported statement reached the checker.");
     }
   }
   check(program: C.Program): CheckedProgram {

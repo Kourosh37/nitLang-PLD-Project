@@ -67,3 +67,11 @@ test("dynamic dispatch starts at the runtime class across three levels", () => {
   expect(execute(source)).toEqual(["C", "C"]);
   expect(execute("class A { let x:int func init(v:int)={this.x=v} func get():int={return this.x} } class B extends A {} class C extends B {} let a:A=new C(7) print(a.get())")).toEqual(["7"]);
 });
+test("language exceptions propagate to nearest catch across calls and loops", () => {
+  expect(execute('func risky():int={throw "bad"} try { risky() } catch e { print(e) }')).toEqual(["bad"]);
+  expect(execute('try { try { throw 7 } catch inner { throw "outer" } } catch e { print(e) }')).toEqual(["outer"]);
+  expect(execute('let i=0 while i<3 do { try { if i==1 then { throw i } print(i) } catch e { print(e) } i=i+1 }')).toEqual(["0", "1", "2"]);
+  expect(execute('func f():int={try { return 4 } catch e { return 5 }} print(f())')).toEqual(["4"]);
+  expect(() => execute('throw "uncaught"')).toThrow("Runtime Error: Uncaught exception: uncaught");
+  expect(() => execute("try { print(1/0) } catch e { print(e) }")).toThrow("Division by zero");
+});
