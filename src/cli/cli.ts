@@ -2,7 +2,8 @@ import { formatDiagnostic } from "../diagnostics/diagnostic";
 import { parse } from "../frontend/parser";
 import { SourceFile } from "../frontend/source-file";
 import { desugar } from "../desugar/desugar";
-import { check, run } from "../pipeline";
+import { bytecode, check, run, runVm } from "../pipeline";
+import { disassemble } from "../bytecode/chunk";
 
 export const commands = ["run", "check", "ast", "core-ast", "bytecode", "vm"] as const;
 export type Command = (typeof commands)[number];
@@ -48,16 +49,17 @@ export function runCli(args: readonly string[], io: CliIO): number {
     io.stderr(`CLI Error: expected '${command} <file.nit>'. Use --help.`);
     return 2;
   }
-  if (command === "ast" || command === "core-ast" || command === "check" || command === "run") {
+  if (command === "ast" || command === "core-ast" || command === "check" || command === "run" || command === "bytecode" || command === "vm") {
     const input = io.readFile(file);
     if (!input.ok) {
       io.stderr(`CLI Error: cannot read ${JSON.stringify(file)}: ${input.message}`);
       return 2;
     }
     const source = new SourceFile(file, input.text);
-    if (command === "check" || command === "run") {
-      const result = command === "check" ? check(source) : run(source, io.stdout);
+    if (command === "check" || command === "run" || command === "bytecode" || command === "vm") {
+      const result = command === "check" ? check(source) : command === "run" ? run(source, io.stdout) : command === "bytecode" ? bytecode(source) : runVm(source, io.stdout);
       if (!result.ok) { io.stderr(formatDiagnostic(result.diagnostic, source)); return 1; }
+      if (command === "bytecode") io.stdout(disassemble(result.value as import("../bytecode/chunk").Chunk));
       return 0;
     }
     const result = parse(source);

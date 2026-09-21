@@ -65,3 +65,13 @@ test("ast command reports missing files as CLI errors", async () => {
   expect(result.stderr).toContain("CLI Error: cannot read");
   expect(result.stderr).not.toContain("at readFileSync");
 });
+
+test("bytecode and vm commands use the actual subset pipeline", async () => {
+  const bytecode = await execute(["bytecode", "tests/fixtures/valid/primitive-bindings.nit"]);
+  expect(bytecode.status).toBe(0);
+  expect(bytecode.stdout).toContain("HALT");
+  expect(bytecode.stdout).toContain("PRINT");
+  const vm = await execute(["vm", "tests/fixtures/valid/primitive-bindings.nit"]);
+  expect(vm.status).toBe(0);
+  expect(vm.stdout.trim().split(/\r?\n/)).toEqual(["inner", "12", "false", "10", "NITLang"]);
+});

@@ -24,15 +24,6 @@ describe("CLI interface", () => {
   }
 
   for (const command of commands) {
-    if (command === "vm" || command === "bytecode") test(`${command} reports unavailable execution`, () => {
-      const result = invoke([command, "path with spaces/program.nit"]);
-      expect(result.status).toBe(2);
-      expect(result.stdout).toEqual([]);
-      expect(result.stderr).toEqual([
-        `CLI Error: '${command}' is not implemented yet.`,
-      ]);
-    });
-
     test(`${command} validates arguments`, () => {
       for (const args of [[command], [command, ""], [command, "   "], [command, "a.nit", "b.nit"]]) {
         const result = invoke(args);

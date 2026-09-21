@@ -9,6 +9,9 @@ import type { CheckedProgram } from "./semantic/type-checker";
 import { Interpreter } from "./interpreter/interpreter";
 import { ControlSignal } from "./runtime/completion";
 import { formatPrimitive } from "./runtime/primitive-operations";
+import { compile } from "./bytecode/compiler";
+import type { Chunk } from "./bytecode/chunk";
+import { VirtualMachine } from "./vm/vm";
 export type Result<T> = { readonly ok: true; readonly value: T } | { readonly ok: false; readonly diagnostic: Diagnostic };
 export function check(source: SourceFile): Result<CheckedProgram> {
   const parsed = parse(source);
@@ -30,4 +33,14 @@ export function run(source: SourceFile, output: (text: string) => void): Result<
     if (error instanceof ControlSignal && error.kind === "throw") return { ok: false, diagnostic: { category: "Runtime Error", message: `Uncaught exception: ${formatPrimitive(error.value, error.span)}`, span: error.span } };
     throw error;
   }
+}
+export function bytecode(source: SourceFile): Result<Chunk> {
+  const checked = check(source); if (!checked.ok) return checked;
+  try { return { ok: true, value: compile(checked.value) }; }
+  catch (error: unknown) { if (error instanceof DiagnosticError) return { ok: false, diagnostic: error.diagnostic }; throw error; }
+}
+export function runVm(source: SourceFile, output: (text: string) => void): Result<void> {
+  const compiled = bytecode(source); if (!compiled.ok) return compiled;
+  try { new VirtualMachine(compiled.value, output).run(); return { ok: true, value: undefined }; }
+  catch (error: unknown) { if (error instanceof DiagnosticError) return { ok: false, diagnostic: error.diagnostic }; throw error; }
 }
