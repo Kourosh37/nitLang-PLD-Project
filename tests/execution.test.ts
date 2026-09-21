@@ -30,3 +30,8 @@ test("assignment, branches, while and hygienic ranges execute", () => {
   expect(() => execute('let x=1 x="bad"')).toThrow("Type Error");
   expect(() => execute("while 1 do {}")).toThrow("Type Error");
 });
+test("named functions recurse and validate all return paths", () => {
+  expect(execute("func fact(n:int):int = { if n==0 then { return 1 } else { return n*fact(n-1) } } print(fact(6))")).toEqual(["720"]);
+  expect(execute("func add(x:int,y:int) = { return x+y } print(add(2,3)) func p() = { return; } p()")).toEqual(["5"]);
+  for (const source of ["func f(x:int):int = { if x>0 then { return x } }", 'func f() = { return 1; return "x" }', "func f() = { return f() }", "return 1", "func f(x:int) = {} f()", 'func f(x:int) = {} f("x")']) expect(() => execute(source)).toThrow("Type Error");
+});

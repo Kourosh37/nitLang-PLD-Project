@@ -35,7 +35,8 @@ export function applyUnary(operator: UnaryOperator, operand: RuntimeValue, span:
 }
 
 function equality(left: RuntimeValue, right: RuntimeValue, span: SourceSpan): boolean {
-  if (left.kind === "void" || right.kind === "void" || left.kind !== right.kind) {
+  if ((left.kind !== "int" && left.kind !== "bool" && left.kind !== "string") ||
+      (right.kind !== "int" && right.kind !== "bool" && right.kind !== "string") || left.kind !== right.kind) {
     fail(`Equality requires matching primitive types; received ${left.kind} and ${right.kind}.`, span);
   }
   return left.value === right.value;
@@ -72,5 +73,6 @@ export function formatPrimitive(value: RuntimeValue, span: SourceSpan): string {
     case "bool": return value.value ? "true" : "false";
     case "string": return value.value;
     case "void": fail("Cannot print a void value.", span);
+    case "closure": return "<function>";
   }
 }
