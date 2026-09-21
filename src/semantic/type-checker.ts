@@ -88,6 +88,16 @@ export class TypeChecker {
         this.bindingTypes.set(this.id(node.name), annotated ?? actual); break;
       }
       case "ExpressionStatement": this.expression(node.expression); break;
+      case "AssignmentStatement": {
+        if (node.target.kind !== "Identifier") this.fail("Field assignment is not implemented yet.", node);
+        if (!this.resolution.bindings.get(node.target)?.mutable) this.fail("Cannot assign a read-only binding.", node);
+        const target = this.expression(node.target);
+        this.expect(this.expression(node.value, target), target, node.value); break;
+      }
+      case "IfStatement":
+        this.expect(this.expression(node.condition), BOOL, node.condition);
+        this.statement(node.thenBranch); if (node.elseBranch !== null) this.statement(node.elseBranch); break;
+      case "WhileStatement": this.expect(this.expression(node.condition), BOOL, node.condition); this.statement(node.body); break;
       default: this.fail(`Static checking for ${node.kind} is not implemented yet.`, node);
     }
   }

@@ -23,3 +23,10 @@ test("check never evaluates runtime errors", () => {
   expect(() => execute("print(1/0)")).toThrow("Division by zero");
   expect(execute("print(false and (1/0 == 0)) print(true or (1/0 == 0))")).toEqual(["false", "true"]);
 });
+test("assignment, branches, while and hygienic ranges execute", () => {
+  expect(execute("let total=0 for i in range(0,4) { let i=10 total=total+i } while total>38 do { total=total-1 } if total==38 then { print(total) } else { print(0) }")).toEqual(["38"]);
+  expect(execute("let end=3 for i in range(0,end) { print(i) end=0 } print(end)")).toEqual(["0", "1", "2", "0"]);
+  expect(execute("for i in range(5,2) { print(i) }")).toEqual([]);
+  expect(() => execute('let x=1 x="bad"')).toThrow("Type Error");
+  expect(() => execute("while 1 do {}")).toThrow("Type Error");
+});

@@ -40,6 +40,14 @@ export class Interpreter {
       case "BlockStatement": { const child = new Environment(environment); node.body.forEach((s) => this.statement(s, child)); break; }
       case "LetDeclaration": { const value = this.expression(node.initializer, environment); environment.define(this.id(node.name), this.store.allocate(value), node.span); break; }
       case "ExpressionStatement": this.expression(node.expression, environment); break;
+      case "AssignmentStatement": {
+        const location = environment.lookup(this.id(node.target), node.span);
+        this.store.write(location, this.expression(node.value, environment), node.span); break;
+      }
+      case "IfStatement":
+        if (requireBoolean(this.expression(node.condition, environment), node.span)) this.statement(node.thenBranch, environment);
+        else if (node.elseBranch !== null) this.statement(node.elseBranch, environment); break;
+      case "WhileStatement": while (requireBoolean(this.expression(node.condition, environment), node.span)) this.statement(node.body, environment); break;
       default: throw new Error(`Unsupported checked statement ${node.kind}.`);
     }
   }
