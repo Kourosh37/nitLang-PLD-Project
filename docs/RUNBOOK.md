@@ -31,6 +31,30 @@ Exit code `0` means success, `1` means a source diagnostic, and `2` means a CLI
 or file error. Source diagnostics include the category, location, source line,
 and caret. Expected failures do not expose a JavaScript stack trace.
 
+## Windows Executable
+
+Build a standalone Windows command-line executable from the repository root:
+
+```powershell
+bun run build:windows
+```
+
+The generated file is `dist/nitlang.exe`. It bundles the NITLang CLI and Bun
+runtime, so the target Windows machine does not need Bun or the TypeScript source
+files installed. Source programs remain separate input files and can be executed
+with the same commands as the development CLI:
+
+```powershell
+.\dist\nitlang.exe --help
+.\dist\nitlang.exe check examples\09-showcase.nit
+.\dist\nitlang.exe run examples\09-showcase.nit
+.\dist\nitlang.exe vm examples\02-control-flow.nit
+```
+
+The executable is generated output and is intentionally excluded from Git by
+the existing `dist/` ignore rule. Rebuild it after changing the interpreter or
+CLI source.
+
 ## Development
 
 ```sh

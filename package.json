@@ -8,6 +8,7 @@
   },
   "scripts": {
     "nitlang": "bun src/cli/main.ts",
+    "build:windows": "bun build --compile --outfile dist/nitlang.exe src/cli/main.ts",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "typecheck": "tsc --noEmit",
