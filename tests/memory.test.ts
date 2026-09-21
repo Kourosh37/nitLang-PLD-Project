@@ -11,7 +11,8 @@ test("fresh cells, lexical lookup and independent shadowed bindings", () => {
   const a = store.allocate(intValue(10, span));
   const b = store.allocate(intValue(10, span));
   expect(a).not.toBe(b);
-  outer.define(1, a, span); child.define(2, b, span);
+  outer.define(1, a, span);
+  child.define(2, b, span);
   store.write(child.lookup(1, span), intValue(20, span), span);
   expect(store.read(a, span)).toEqual(intValue(20, span));
   expect(store.read(b, span)).toEqual(intValue(10, span));

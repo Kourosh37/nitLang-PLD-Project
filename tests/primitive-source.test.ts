@@ -10,10 +10,14 @@ import type { PrimitiveValue } from "../src/runtime/values";
 // This is a literal conversion test adapter, not a Surface AST evaluator.
 function literalValue(node: Expression): PrimitiveValue {
   switch (node.kind) {
-    case "IntegerLiteral": return intValue(node.value, node.span);
-    case "StringLiteral": return stringValue(node.value);
-    case "BooleanLiteral": return boolValue(node.value);
-    default: throw new Error("Expected a direct literal for this operation contract test.");
+    case "IntegerLiteral":
+      return intValue(node.value, node.span);
+    case "StringLiteral":
+      return stringValue(node.value);
+    case "BooleanLiteral":
+      return boolValue(node.value);
+    default:
+      throw new Error("Expected a direct literal for this operation contract test.");
   }
 }
 
@@ -33,12 +37,18 @@ for (const [source, expected] of [
     const parsed = parse(new SourceFile("primitive.nit", source));
     if (!parsed.ok) throw new Error(parsed.diagnostic.message);
     const statement = parsed.program.body[0];
-    if (statement?.kind !== "ExpressionStatement" || statement.expression.kind !== "BinaryExpression") {
+    if (
+      statement?.kind !== "ExpressionStatement" ||
+      statement.expression.kind !== "BinaryExpression"
+    ) {
       throw new Error("Expected binary syntax.");
     }
     const node = statement.expression;
-    if (node.operator === "and" || node.operator === "or") throw new Error("Logical sugar is not an eager primitive.");
-    expect(applyBinary(node.operator, literalValue(node.left), literalValue(node.right), node.span)).toEqual(expected);
+    if (node.operator === "and" || node.operator === "or")
+      throw new Error("Logical sugar is not an eager primitive.");
+    expect(
+      applyBinary(node.operator, literalValue(node.left), literalValue(node.right), node.span),
+    ).toEqual(expected);
   });
 }
 
@@ -47,7 +57,8 @@ test("parsed division failure preserves the source expression span", () => {
   const parsed = parse(source);
   if (!parsed.ok) throw new Error(parsed.diagnostic.message);
   const statement = parsed.program.body[0];
-  if (statement?.kind !== "ExpressionStatement" || statement.expression.kind !== "BinaryExpression") throw new Error("Expected binary syntax.");
+  if (statement?.kind !== "ExpressionStatement" || statement.expression.kind !== "BinaryExpression")
+    throw new Error("Expected binary syntax.");
   const node = statement.expression;
   try {
     applyBinary("/", literalValue(node.left), literalValue(node.right), node.span);
@@ -64,16 +75,41 @@ test("binding/block fixture preserves the structure needed for lexical locations
   const result = parse(new SourceFile("primitive-bindings.nit", await Bun.file(file).text()));
   if (!result.ok) throw new Error(result.diagnostic.message);
   expect(result.program.body).toMatchObject([
-    { kind: "LetDeclaration", name: { name: "count" }, annotation: { name: "int" }, initializer: { value: 10 } },
+    {
+      kind: "LetDeclaration",
+      name: { name: "count" },
+      annotation: { name: "int" },
+      initializer: { value: 10 },
+    },
     { kind: "LetDeclaration", name: { name: "enabled" }, annotation: { name: "bool" } },
     { kind: "LetDeclaration", name: { name: "title" }, annotation: { name: "string" } },
-    { kind: "BlockStatement", body: [
-      { kind: "LetDeclaration", name: { name: "count" }, annotation: null, initializer: { kind: "BinaryExpression", left: { name: "count" }, right: { value: 2 } } },
-      { kind: "LetDeclaration", name: { name: "enabled" }, initializer: { kind: "UnaryExpression", operator: "not", operand: { name: "enabled" } } },
-      { kind: "BlockStatement", body: [{ kind: "LetDeclaration", name: { name: "title" }, initializer: { value: "inner" } }, { kind: "ExpressionStatement" }] },
-      { kind: "ExpressionStatement" }, { kind: "ExpressionStatement" },
-    ] },
-    { kind: "ExpressionStatement" }, { kind: "ExpressionStatement" },
+    {
+      kind: "BlockStatement",
+      body: [
+        {
+          kind: "LetDeclaration",
+          name: { name: "count" },
+          annotation: null,
+          initializer: { kind: "BinaryExpression", left: { name: "count" }, right: { value: 2 } },
+        },
+        {
+          kind: "LetDeclaration",
+          name: { name: "enabled" },
+          initializer: { kind: "UnaryExpression", operator: "not", operand: { name: "enabled" } },
+        },
+        {
+          kind: "BlockStatement",
+          body: [
+            { kind: "LetDeclaration", name: { name: "title" }, initializer: { value: "inner" } },
+            { kind: "ExpressionStatement" },
+          ],
+        },
+        { kind: "ExpressionStatement" },
+        { kind: "ExpressionStatement" },
+      ],
+    },
+    { kind: "ExpressionStatement" },
+    { kind: "ExpressionStatement" },
   ]);
   // Scope resolution and store mutation are intentionally not claimed by this test.
 });

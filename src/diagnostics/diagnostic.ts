@@ -24,8 +24,13 @@ export function formatDiagnostic(diagnostic: Diagnostic, source?: SourceFile): s
   const detail: string[] = [];
   if (source !== undefined && source.name === sourceName) {
     const line = source.lineText(start.line);
-    const width = diagnostic.span.end.line === start.line ? Math.max(1, diagnostic.span.end.column - start.column) : 1;
+    const width =
+      diagnostic.span.end.line === start.line
+        ? Math.max(1, diagnostic.span.end.column - start.column)
+        : 1;
     detail.push(`  ${line}`, `  ${" ".repeat(start.column - 1)}${"^".repeat(width)}`);
   }
-  return [heading, ...detail, ...(diagnostic.notes ?? []).map((note) => `  note: ${note}`)].join("\n");
+  return [heading, ...detail, ...(diagnostic.notes ?? []).map((note) => `  note: ${note}`)].join(
+    "\n",
+  );
 }

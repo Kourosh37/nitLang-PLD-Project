@@ -1,6 +1,15 @@
 import type {
-  BlockStatement, ClassDeclaration, Expression, FieldDeclaration, FunctionDeclaration,
-  Identifier, Parameter, Program, Statement, TopLevelItem, TypeAnnotation,
+  BlockStatement,
+  ClassDeclaration,
+  Expression,
+  FieldDeclaration,
+  FunctionDeclaration,
+  Identifier,
+  Parameter,
+  Program,
+  Statement,
+  TopLevelItem,
+  TypeAnnotation,
 } from "../ast/surface";
 import { DiagnosticError } from "../diagnostics/diagnostic";
 import type { Diagnostic } from "../diagnostics/diagnostic";
@@ -21,11 +30,15 @@ class Parser {
   private cursor = 0;
   private depth = 0;
 
-  constructor(private readonly source: SourceFile, private readonly tokens: readonly Token[]) {}
+  constructor(
+    private readonly source: SourceFile,
+    private readonly tokens: readonly Token[],
+  ) {}
 
   program(): Program {
     const body: TopLevelItem[] = [];
-    while (!this.at("eof")) body.push(this.at("class") ? this.classDeclaration() : this.statement());
+    while (!this.at("eof"))
+      body.push(this.at("class") ? this.classDeclaration() : this.statement());
     return { kind: "Program", body, span: this.source.span(0, this.source.text.length) };
   }
 
@@ -35,7 +48,9 @@ class Parser {
     return token;
   }
 
-  private at(kind: TokenKind): boolean { return this.current().kind === kind; }
+  private at(kind: TokenKind): boolean {
+    return this.current().kind === kind;
+  }
 
   private advance(): Token {
     const token = this.current();
@@ -63,9 +78,14 @@ class Parser {
   }
 
   private nested<T>(parse: () => T): T {
-    if (this.depth >= MAX_PARSE_DEPTH) this.fail(`Syntax nesting exceeds the parser limit (${MAX_PARSE_DEPTH}).`);
+    if (this.depth >= MAX_PARSE_DEPTH)
+      this.fail(`Syntax nesting exceeds the parser limit (${MAX_PARSE_DEPTH}).`);
     this.depth += 1;
-    try { return parse(); } finally { this.depth -= 1; }
+    try {
+      return parse();
+    } finally {
+      this.depth -= 1;
+    }
   }
 
   private spanFrom(start: number): SourceSpan {
@@ -81,7 +101,9 @@ class Parser {
   private separated<T>(end: TokenKind, item: () => T): T[] {
     const items: T[] = [];
     if (!this.at(end)) {
-      do { items.push(item()); } while (this.take(","));
+      do {
+        items.push(item());
+      } while (this.take(","));
     }
     this.expect(end);
     return items;
@@ -101,7 +123,12 @@ class Parser {
     return this.nested(() => {
       const token = this.advance();
       const start = token.span.start.offset;
-      if (token.kind === "int" || token.kind === "bool" || token.kind === "string" || token.kind === "void") {
+      if (
+        token.kind === "int" ||
+        token.kind === "bool" ||
+        token.kind === "string" ||
+        token.kind === "void"
+      ) {
         return { kind: "PrimitiveType", name: token.kind, span: token.span };
       }
       if (token.kind !== "identifier") this.fail("Expected a type annotation.", token.span);
@@ -109,7 +136,11 @@ class Parser {
         this.expect("<");
         const element = this.typeAnnotation();
         this.expect(">");
-        return { kind: token.lexeme === "List" ? "ListType" : "ReferenceType", element, span: this.spanFrom(start) };
+        return {
+          kind: token.lexeme === "List" ? "ListType" : "ReferenceType",
+          element,
+          span: this.spanFrom(start),
+        };
       }
       if (token.lexeme === "Fn") {
         this.expect("(");
@@ -137,8 +168,11 @@ class Parser {
   private statementBody(): Statement {
     const start = this.current().span.start.offset;
     switch (this.current().kind) {
-      case ";": this.advance(); return { kind: "EmptyStatement", span: this.spanFrom(start) };
-      case "{": return this.block();
+      case ";":
+        this.advance();
+        return { kind: "EmptyStatement", span: this.spanFrom(start) };
+      case "{":
+        return this.block();
       case "let": {
         this.advance();
         const name = this.identifier();
@@ -146,9 +180,16 @@ class Parser {
         this.expect("=");
         const initializer = this.expression();
         this.take(";");
-        return { kind: "LetDeclaration", name, annotation, initializer, span: this.spanFrom(start) };
+        return {
+          kind: "LetDeclaration",
+          name,
+          annotation,
+          initializer,
+          span: this.spanFrom(start),
+        };
       }
-      case "func": return this.functionDeclaration();
+      case "func":
+        return this.functionDeclaration();
       case "if": {
         this.advance();
         const condition = this.expression();
@@ -156,7 +197,13 @@ class Parser {
         const thenBranch = this.block();
         const elseBranch = this.take("else") ? this.block() : null;
         this.take(";");
-        return { kind: "IfStatement", condition, thenBranch, elseBranch, span: this.spanFrom(start) };
+        return {
+          kind: "IfStatement",
+          condition,
+          thenBranch,
+          elseBranch,
+          span: this.spanFrom(start),
+        };
       }
       case "while": {
         this.advance();
@@ -166,7 +213,8 @@ class Parser {
         this.take(";");
         return { kind: "WhileStatement", condition, body, span: this.spanFrom(start) };
       }
-      case "for": return this.forStatement();
+      case "for":
+        return this.forStatement();
       case "return": {
         this.advance();
         const value = this.at(";") ? null : this.expression();
@@ -188,8 +236,10 @@ class Parser {
         this.take(";");
         return { kind: "TryStatement", body, catchName, catchBody, span: this.spanFrom(start) };
       }
-      case "class": this.fail("Class declarations are only allowed at top level.");
-      default: return this.expressionStatement();
+      case "class":
+        this.fail("Class declarations are only allowed at top level.");
+      default:
+        return this.expressionStatement();
     }
   }
 
@@ -201,7 +251,14 @@ class Parser {
     this.expect("=");
     const body = this.block();
     this.take(";");
-    return { kind: "FunctionDeclaration", name, parameters, returnType, body, span: this.spanFrom(start) };
+    return {
+      kind: "FunctionDeclaration",
+      name,
+      parameters,
+      returnType,
+      body,
+      span: this.spanFrom(start),
+    };
   }
 
   private forStatement(): Statement {
@@ -233,7 +290,12 @@ class Parser {
         this.expect(":");
         const annotation = this.typeAnnotation();
         this.take(";");
-        members.push({ kind: "FieldDeclaration", name: fieldName, annotation, span: this.spanFrom(fieldStart) });
+        members.push({
+          kind: "FieldDeclaration",
+          name: fieldName,
+          annotation,
+          span: this.spanFrom(fieldStart),
+        });
       } else this.fail("Expected a field or method declaration.");
     }
     this.expect("}");
@@ -257,7 +319,12 @@ class Parser {
     if (this.take(":=")) {
       const value = this.expression();
       this.take(";");
-      return { kind: "ReferenceAssignmentStatement", target: expression, value, span: this.spanFrom(start) };
+      return {
+        kind: "ReferenceAssignmentStatement",
+        target: expression,
+        value,
+        span: this.spanFrom(start),
+      };
     }
     this.take(";");
     return { kind: "ExpressionStatement", expression, span: this.spanFrom(start) };
@@ -271,7 +338,13 @@ class Parser {
         if (!isBinaryOperator(operator) || binaryPrecedence[operator] < minimum) break;
         this.advance();
         const right = this.expression(binaryPrecedence[operator] + 1);
-        left = { kind: "BinaryExpression", operator, left, right, span: this.spanFrom(left.span.start.offset) };
+        left = {
+          kind: "BinaryExpression",
+          operator,
+          left,
+          right,
+          span: this.spanFrom(left.span.start.offset),
+        };
       }
       return left;
     });
@@ -282,7 +355,12 @@ class Parser {
     if (token.kind === "-" || token.kind === "not") {
       this.advance();
       const operand = this.nested(() => this.unary());
-      return { kind: "UnaryExpression", operator: token.kind, operand, span: this.spanFrom(token.span.start.offset) };
+      return {
+        kind: "UnaryExpression",
+        operator: token.kind,
+        operand,
+        span: this.spanFrom(token.span.start.offset),
+      };
     }
     if (this.take("ref")) {
       const target = this.identifier();
@@ -293,10 +371,20 @@ class Parser {
       const start = expression.span.start.offset;
       if (this.take(".")) {
         const member = this.identifier();
-        expression = { kind: "MemberExpression", object: expression, member, span: this.spanFrom(start) };
+        expression = {
+          kind: "MemberExpression",
+          object: expression,
+          member,
+          span: this.spanFrom(start),
+        };
       } else {
         const args = this.arguments();
-        expression = { kind: "CallExpression", callee: expression, arguments: args, span: this.spanFrom(start) };
+        expression = {
+          kind: "CallExpression",
+          callee: expression,
+          arguments: args,
+          span: this.spanFrom(start),
+        };
       }
     }
     return expression;
@@ -311,11 +399,21 @@ class Parser {
     const token = this.current();
     const start = token.span.start.offset;
     switch (token.kind) {
-      case "integer": this.advance(); return { kind: "IntegerLiteral", value: token.value, span: token.span };
-      case "string-literal": this.advance(); return { kind: "StringLiteral", value: token.value, span: token.span };
-      case "true": case "false": this.advance(); return { kind: "BooleanLiteral", value: token.kind === "true", span: token.span };
-      case "identifier": return this.identifier();
-      case "this": this.advance(); return { kind: "ThisExpression", span: token.span };
+      case "integer":
+        this.advance();
+        return { kind: "IntegerLiteral", value: token.value, span: token.span };
+      case "string-literal":
+        this.advance();
+        return { kind: "StringLiteral", value: token.value, span: token.span };
+      case "true":
+      case "false":
+        this.advance();
+        return { kind: "BooleanLiteral", value: token.kind === "true", span: token.span };
+      case "identifier":
+        return this.identifier();
+      case "this":
+        this.advance();
+        return { kind: "ThisExpression", span: token.span };
       case "(": {
         this.advance();
         const expression = this.expression();
@@ -347,31 +445,54 @@ class Parser {
         const arms: import("../ast/surface").MatchArm[] = [];
         while (!this.at("}") && !this.at("eof")) {
           const patternStart = this.current().span.start.offset;
-          let negative = false; if (this.take("-")) negative = true;
+          let negative = false;
+          if (this.take("-")) negative = true;
           const patternToken = this.advance();
           let pattern: import("../ast/surface").Pattern;
-          if (patternToken.kind === "integer") pattern = { kind: "IntegerPattern", value: negative ? -patternToken.value : patternToken.value, span: this.spanFrom(patternStart) };
-          else if (!negative && patternToken.kind === "string-literal") pattern = { kind: "StringPattern", value: patternToken.value, span: patternToken.span };
-          else if (!negative && (patternToken.kind === "true" || patternToken.kind === "false")) pattern = { kind: "BooleanPattern", value: patternToken.kind === "true", span: patternToken.span };
-          else if (!negative && patternToken.kind === "identifier" && patternToken.lexeme === "_") pattern = { kind: "WildcardPattern", span: patternToken.span };
+          if (patternToken.kind === "integer")
+            pattern = {
+              kind: "IntegerPattern",
+              value: negative ? -patternToken.value : patternToken.value,
+              span: this.spanFrom(patternStart),
+            };
+          else if (!negative && patternToken.kind === "string-literal")
+            pattern = { kind: "StringPattern", value: patternToken.value, span: patternToken.span };
+          else if (!negative && (patternToken.kind === "true" || patternToken.kind === "false"))
+            pattern = {
+              kind: "BooleanPattern",
+              value: patternToken.kind === "true",
+              span: patternToken.span,
+            };
+          else if (!negative && patternToken.kind === "identifier" && patternToken.lexeme === "_")
+            pattern = { kind: "WildcardPattern", span: patternToken.span };
           else this.fail("Expected a literal pattern or '_'.", patternToken.span);
           this.expect("=>");
           const armExpression = this.expression();
           this.take(";");
-          arms.push({ kind: "MatchArm", pattern, expression: armExpression, span: this.spanFrom(patternStart) });
+          arms.push({
+            kind: "MatchArm",
+            pattern,
+            expression: armExpression,
+            span: this.spanFrom(patternStart),
+          });
         }
         if (arms.length === 0) this.fail("A match expression requires at least one arm.");
         this.expect("}");
         return { kind: "MatchExpression", scrutinee, arms, span: this.spanFrom(start) };
       }
-      default: this.fail(`Expected an expression, found ${this.describeCurrent()}.`);
+      default:
+        this.fail(`Expected an expression, found ${this.describeCurrent()}.`);
     }
   }
 }
 
 /** Parser boundary for a complete lexer-produced stream from this source. */
 export function parseTokens(source: SourceFile, tokens: readonly Token[]): ParseResult {
-  if (tokens.length === 0 || tokens.at(-1)?.kind !== "eof" || tokens.slice(0, -1).some((token) => token.kind === "eof")) {
+  if (
+    tokens.length === 0 ||
+    tokens.at(-1)?.kind !== "eof" ||
+    tokens.slice(0, -1).some((token) => token.kind === "eof")
+  ) {
     throw new TypeError("Parser requires a token stream ending in exactly one EOF.");
   }
   try {

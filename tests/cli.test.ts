@@ -25,7 +25,12 @@ describe("CLI interface", () => {
 
   for (const command of commands) {
     test(`${command} validates arguments`, () => {
-      for (const args of [[command], [command, ""], [command, "   "], [command, "a.nit", "b.nit"]]) {
+      for (const args of [
+        [command],
+        [command, ""],
+        [command, "   "],
+        [command, "a.nit", "b.nit"],
+      ]) {
         const result = invoke(args);
         expect(result.status).toBe(2);
         expect(result.stdout).toEqual([]);
@@ -39,7 +44,11 @@ describe("CLI interface", () => {
     expect(result.status).toBe(0);
     expect(result.stderr).toEqual([]);
     const output: unknown = JSON.parse(result.stdout.join("\n"));
-    expect(output).toMatchObject({ kind: "Program", body: [{ kind: "LetDeclaration" }], span: { sourceName: "path with spaces/program.nit" } });
+    expect(output).toMatchObject({
+      kind: "Program",
+      body: [{ kind: "LetDeclaration" }],
+      span: { sourceName: "path with spaces/program.nit" },
+    });
   });
 
   test("ast reports source diagnostics with failure status and no partial AST", () => {
@@ -56,7 +65,9 @@ describe("CLI interface", () => {
     const errors: string[] = [];
     const status = runCli(["ast", "missing.nit"], {
       readFile: () => ({ ok: false, message: "File not found." }),
-      stdout: () => { throw new Error("Unexpected output."); },
+      stdout: () => {
+        throw new Error("Unexpected output.");
+      },
       stderr: (message) => errors.push(message),
     });
     expect(status).toBe(2);
@@ -64,7 +75,10 @@ describe("CLI interface", () => {
   });
 
   test("unknown commands and misplaced help do not report success", () => {
-    for (const args of [["launch", "a.nit"], ["--help", "a.nit"]]) {
+    for (const args of [
+      ["launch", "a.nit"],
+      ["--help", "a.nit"],
+    ]) {
       const result = invoke(args);
       expect(result.status).toBe(2);
       expect(result.stdout).toEqual([]);

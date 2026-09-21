@@ -2,7 +2,7 @@ import { expect, test } from "bun:test";
 import { parse } from "../src/frontend/parser";
 import { SourceFile } from "../src/frontend/source-file";
 
-for (const path of ["./fixtures/valid/lexical-combination.nit", "../examples/surface-tour.nit"]) {
+for (const path of ["./fixtures/valid/lexical-combination.nit", "../examples/09-showcase.nit"]) {
   test(`actual source parses: ${path}`, async () => {
     const file = new URL(path, import.meta.url);
     const result = parse(new SourceFile(path, await Bun.file(file).text()));

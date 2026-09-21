@@ -15,7 +15,16 @@ describe("source positions", () => {
 
   test("every offset in mixed line endings has a defined position", () => {
     const source = new SourceFile("mixed.nit", "a\r\nb\rc\n");
-    const coordinates = [[1, 1], [1, 2], [1, 3], [2, 1], [2, 2], [3, 1], [3, 2], [4, 1]] as const;
+    const coordinates = [
+      [1, 1],
+      [1, 2],
+      [1, 3],
+      [2, 1],
+      [2, 2],
+      [3, 1],
+      [3, 2],
+      [4, 1],
+    ] as const;
     coordinates.forEach(([line, column], offset) => {
       expect(source.positionAt(offset)).toEqual({ offset, line, column });
     });
@@ -28,7 +37,11 @@ describe("source positions", () => {
       const source = new SourceFile("lines.nit", `first${ending}${ending}last${ending}`);
       expect(source.lineCount).toBe(4);
       expect([1, 2, 3, 4].map((line) => source.lineText(line))).toEqual(["first", "", "last", ""]);
-      expect(source.positionAt(source.text.length)).toEqual({ offset: source.text.length, line: 4, column: 1 });
+      expect(source.positionAt(source.text.length)).toEqual({
+        offset: source.text.length,
+        line: 4,
+        column: 1,
+      });
     });
   }
 
@@ -45,7 +58,11 @@ describe("source positions", () => {
   test("line lookup supports a large source and backward queries", () => {
     const source = new SourceFile("large.nit", "abc\n".repeat(10_000) + "end");
     for (const index of [10_000, 5_000, 1, 0, 9_999]) {
-      expect(source.positionAt(index * 4)).toEqual({ offset: index * 4, line: index + 1, column: 1 });
+      expect(source.positionAt(index * 4)).toEqual({
+        offset: index * 4,
+        line: index + 1,
+        column: 1,
+      });
     }
     expect(source.lineText(10_001)).toBe("end");
     expect(source.positionAt(source.text.length).column).toBe(4);
@@ -56,12 +73,19 @@ describe("source spans", () => {
   test("token, multiline and EOF spans slice unchanged source", () => {
     const source = new SourceFile("example.nit", "let x = 1\r\nprint(x)");
     expect(source.positionAt(11)).toEqual({ offset: 11, line: 2, column: 1 });
-    for (const [start, end] of [[4, 5], [0, 9], [4, 16], [0, source.text.length]] as const) {
+    for (const [start, end] of [
+      [4, 5],
+      [0, 9],
+      [4, 16],
+      [0, source.text.length],
+    ] as const) {
       const span = source.span(start, end);
       expect(span.sourceName).toBe("example.nit");
       expect(span.start).toEqual(source.positionAt(start));
       expect(span.end).toEqual(source.positionAt(end));
-      expect(source.text.slice(span.start.offset, span.end.offset)).toBe(source.text.slice(start, end));
+      expect(source.text.slice(span.start.offset, span.end.offset)).toBe(
+        source.text.slice(start, end),
+      );
     }
     const eof = source.span(source.text.length);
     expect(eof.start).toEqual(eof.end);

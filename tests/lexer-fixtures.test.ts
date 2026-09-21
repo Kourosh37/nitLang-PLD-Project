@@ -18,7 +18,11 @@ test("real combination fixture passes the available source-to-token pipeline", a
   }
 });
 
-for (const [name, message] of [["overflow", "safe integer limit"], ["escape", "Unsupported string escape"], ["comment", "Unterminated block comment"]] as const) {
+for (const [name, message] of [
+  ["overflow", "safe integer limit"],
+  ["escape", "Unsupported string escape"],
+  ["comment", "Unterminated block comment"],
+] as const) {
   test(`real invalid ${name} fixture produces a controlled diagnostic`, async () => {
     const file = new URL(`./fixtures/invalid/lexical-${name}.nit`, import.meta.url);
     const result = lex(new SourceFile(file.pathname, await Bun.file(file).text()));

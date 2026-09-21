@@ -40,10 +40,13 @@ test("actual process rejects malformed invocation", async () => {
 });
 
 test("ast command parses the example and emits JSON without executing print", async () => {
-  const result = await execute(["ast", "examples/surface-tour.nit"]);
+  const result = await execute(["ast", "examples/09-showcase.nit"]);
   expect(result.status).toBe(0);
   const output: unknown = JSON.parse(result.stdout);
-  expect(output).toMatchObject({ kind: "Program", span: { sourceName: "examples/surface-tour.nit" } });
+  expect(output).toMatchObject({
+    kind: "Program",
+    span: { sourceName: "examples/09-showcase.nit" },
+  });
   expect(result.stderr).not.toContain("Error:");
 });
 

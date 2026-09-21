@@ -2,7 +2,12 @@ import { describe, expect, test } from "bun:test";
 import { DiagnosticError } from "../src/diagnostics/diagnostic";
 import type { PrimitiveBinaryOperator } from "../src/language/operators";
 import { SourceFile } from "../src/frontend/source-file";
-import { applyBinary, applyUnary, formatPrimitive, requireBoolean } from "../src/runtime/primitive-operations";
+import {
+  applyBinary,
+  applyUnary,
+  formatPrimitive,
+  requireBoolean,
+} from "../src/runtime/primitive-operations";
 import { boolValue, intValue, MAX_INT, MIN_INT, stringValue, VOID } from "../src/runtime/values";
 import type { RuntimeValue } from "../src/runtime/values";
 
@@ -11,7 +16,11 @@ const int = (value: number) => intValue(value, span);
 
 function runtimeFailure(action: () => unknown, message: string): void {
   let caught: unknown;
-  try { action(); } catch (error: unknown) { caught = error; }
+  try {
+    action();
+  } catch (error: unknown) {
+    caught = error;
+  }
   expect(caught).toBeInstanceOf(DiagnosticError);
   if (!(caught instanceof DiagnosticError)) throw new Error("Expected controlled diagnostic.");
   expect(caught.diagnostic.category).toBe("Runtime Error");
@@ -23,8 +32,10 @@ describe("tagged primitive values", () => {
   test("factories preserve kinds and freeze values", () => {
     const values = [int(12), boolValue(true), stringValue("text"), VOID];
     expect(values).toEqual([
-      { kind: "int", value: 12 }, { kind: "bool", value: true },
-      { kind: "string", value: "text" }, { kind: "void" },
+      { kind: "int", value: 12 },
+      { kind: "bool", value: true },
+      { kind: "string", value: "text" },
+      { kind: "void" },
     ]);
     for (const value of values) expect(Object.isFrozen(value)).toBe(true);
     expect(Reflect.set(values[0] ?? {}, "value", 99)).toBe(false);
@@ -47,13 +58,26 @@ describe("tagged primitive values", () => {
 
 describe("integer arithmetic", () => {
   const cases: readonly (readonly [PrimitiveBinaryOperator, number, number, number])[] = [
-    ["+", 7, 5, 12], ["+", -7, 5, -2], ["-", 7, 5, 2], ["-", -7, -5, -2],
-    ["*", -7, 5, -35], ["*", -7, -5, 35], ["*", 0, MAX_INT, 0],
-    ["/", 7, 3, 2], ["/", -7, 3, -2], ["/", 7, -3, -2], ["/", -7, -3, 2],
-    ["/", 1, -2, 0], ["/", 0, -3, 0], ["/", MAX_INT, 3, 3002399751580330],
-    ["/", MIN_INT, -1, MAX_INT], ["+", MAX_INT, MIN_INT, 0],
-    ["-", MAX_INT, 1, 9007199254740990], ["*", MAX_INT, 1, MAX_INT],
-    ["*", MIN_INT, -1, MAX_INT], ["/", MIN_INT, MAX_INT, -1],
+    ["+", 7, 5, 12],
+    ["+", -7, 5, -2],
+    ["-", 7, 5, 2],
+    ["-", -7, -5, -2],
+    ["*", -7, 5, -35],
+    ["*", -7, -5, 35],
+    ["*", 0, MAX_INT, 0],
+    ["/", 7, 3, 2],
+    ["/", -7, 3, -2],
+    ["/", 7, -3, -2],
+    ["/", -7, -3, 2],
+    ["/", 1, -2, 0],
+    ["/", 0, -3, 0],
+    ["/", MAX_INT, 3, 3002399751580330],
+    ["/", MIN_INT, -1, MAX_INT],
+    ["+", MAX_INT, MIN_INT, 0],
+    ["-", MAX_INT, 1, 9007199254740990],
+    ["*", MAX_INT, 1, MAX_INT],
+    ["*", MIN_INT, -1, MAX_INT],
+    ["/", MIN_INT, MAX_INT, -1],
   ];
   for (const [operator, left, right, expected] of cases) {
     test(`${left} ${operator} ${right} produces ${expected}`, () => {
@@ -62,8 +86,13 @@ describe("integer arithmetic", () => {
   }
 
   for (const [operator, left, right] of [
-    ["+", MAX_INT, 1], ["+", MIN_INT, -1], ["-", MIN_INT, 1], ["-", MAX_INT, -1],
-    ["*", MAX_INT, 2], ["*", MIN_INT, 2], ["*", 94906266, 94906266],
+    ["+", MAX_INT, 1],
+    ["+", MIN_INT, -1],
+    ["-", MIN_INT, 1],
+    ["-", MAX_INT, -1],
+    ["*", MAX_INT, 2],
+    ["*", MIN_INT, 2],
+    ["*", 94906266, 94906266],
   ] as const) {
     test(`overflow for ${left} ${operator} ${right}`, () => {
       runtimeFailure(() => applyBinary(operator, int(left), int(right), span), "overflow");
@@ -87,9 +116,12 @@ describe("integer arithmetic", () => {
 
 describe("comparisons and boolean values", () => {
   for (const [operator, less, equal, greater] of [
-    ["<", true, false, false], [">", false, false, true],
-    ["<=", true, true, false], [">=", false, true, true],
-    ["==", false, true, false], ["!=", true, false, true],
+    ["<", true, false, false],
+    [">", false, false, true],
+    ["<=", true, true, false],
+    [">=", false, true, true],
+    ["==", false, true, false],
+    ["!=", true, false, true],
   ] as const) {
     test(`comparison ${operator}`, () => {
       expect(applyBinary(operator, int(MIN_INT), int(MAX_INT), span)).toEqual(boolValue(less));
@@ -127,19 +159,24 @@ describe("no implicit coercion", () => {
   const values: readonly RuntimeValue[] = [int(1), boolValue(true), stringValue("1"), VOID];
   for (const operator of ["+", "-", "*", "/", "<", ">", "<=", ">="] as const) {
     test(`${operator} rejects every non-int operand pairing`, () => {
-      for (const left of values) for (const right of values) {
-        if (left.kind === "int" && right.kind === "int") continue;
-        runtimeFailure(() => applyBinary(operator, left, right, span), "requires int");
-      }
+      for (const left of values)
+        for (const right of values) {
+          if (left.kind === "int" && right.kind === "int") continue;
+          runtimeFailure(() => applyBinary(operator, left, right, span), "requires int");
+        }
     });
   }
 
   for (const operator of ["==", "!="] as const) {
     test(`${operator} rejects mismatched types and void`, () => {
-      for (const left of values) for (const right of values) {
-        if (left.kind === right.kind && left.kind !== "void") continue;
-        runtimeFailure(() => applyBinary(operator, left, right, span), "matching primitive types");
-      }
+      for (const left of values)
+        for (const right of values) {
+          if (left.kind === right.kind && left.kind !== "void") continue;
+          runtimeFailure(
+            () => applyBinary(operator, left, right, span),
+            "matching primitive types",
+          );
+        }
     });
   }
 
@@ -157,7 +194,9 @@ describe("primitive output formatting", () => {
     expect(formatPrimitive(int(-0), span)).toBe("0");
     expect(formatPrimitive(boolValue(true), span)).toBe("true");
     expect(formatPrimitive(boolValue(false), span)).toBe("false");
-    expect(formatPrimitive(stringValue("\u0633\u0644\u0627\u0645\n"), span)).toBe("\u0633\u0644\u0627\u0645\n");
+    expect(formatPrimitive(stringValue("\u0633\u0644\u0627\u0645\n"), span)).toBe(
+      "\u0633\u0644\u0627\u0645\n",
+    );
     expect(formatPrimitive(stringValue(""), span)).toBe("");
   });
 

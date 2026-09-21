@@ -11,7 +11,10 @@ export type Command = (typeof commands)[number];
 export interface CliIO {
   readonly stdout: (message: string) => void;
   readonly stderr: (message: string) => void;
-  readonly readFile: (path: string) => { readonly ok: true; readonly text: string } | { readonly ok: false; readonly message: string };
+  readonly readFile: (
+    path: string,
+  ) =>
+    { readonly ok: true; readonly text: string } | { readonly ok: false; readonly message: string };
 }
 
 export const help = `NITLang - educational programming language
@@ -49,7 +52,14 @@ export function runCli(args: readonly string[], io: CliIO): number {
     io.stderr(`CLI Error: expected '${command} <file.nit>'. Use --help.`);
     return 2;
   }
-  if (command === "ast" || command === "core-ast" || command === "check" || command === "run" || command === "bytecode" || command === "vm") {
+  if (
+    command === "ast" ||
+    command === "core-ast" ||
+    command === "check" ||
+    command === "run" ||
+    command === "bytecode" ||
+    command === "vm"
+  ) {
     const input = io.readFile(file);
     if (!input.ok) {
       io.stderr(`CLI Error: cannot read ${JSON.stringify(file)}: ${input.message}`);
@@ -57,9 +67,20 @@ export function runCli(args: readonly string[], io: CliIO): number {
     }
     const source = new SourceFile(file, input.text);
     if (command === "check" || command === "run" || command === "bytecode" || command === "vm") {
-      const result = command === "check" ? check(source) : command === "run" ? run(source, io.stdout) : command === "bytecode" ? bytecode(source) : runVm(source, io.stdout);
-      if (!result.ok) { io.stderr(formatDiagnostic(result.diagnostic, source)); return 1; }
-      if (command === "bytecode") io.stdout(disassemble(result.value as import("../bytecode/chunk").Chunk));
+      const result =
+        command === "check"
+          ? check(source)
+          : command === "run"
+            ? run(source, io.stdout)
+            : command === "bytecode"
+              ? bytecode(source)
+              : runVm(source, io.stdout);
+      if (!result.ok) {
+        io.stderr(formatDiagnostic(result.diagnostic, source));
+        return 1;
+      }
+      if (command === "bytecode")
+        io.stdout(disassemble(result.value as import("../bytecode/chunk").Chunk));
       return 0;
     }
     const result = parse(source);
@@ -67,7 +88,9 @@ export function runCli(args: readonly string[], io: CliIO): number {
       io.stderr(formatDiagnostic(result.diagnostic, source));
       return 1;
     }
-    io.stdout(JSON.stringify(command === "core-ast" ? desugar(result.program) : result.program, null, 2));
+    io.stdout(
+      JSON.stringify(command === "core-ast" ? desugar(result.program) : result.program, null, 2),
+    );
     return 0;
   }
   io.stderr(`CLI Error: '${command}' is not implemented yet.`);
