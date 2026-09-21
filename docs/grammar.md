@@ -74,6 +74,12 @@ Without that separator, subtraction belongs to the previous arm's expression
 and the remaining `=>` produces a Syntax Error. This follows the same greedy
 expression rule as statements. Pattern matching syntax remains deferred to M21.
 
+Implementation notes (M3): ordinary assignment permits grouped identifier/field
+targets, unwrapping the grouping in its target AST. Annotation parsing follows
+longest-match lexing, so separate `>` from a subsequent `=` with whitespace.
+Return/this context and annotation validity are semantic checks, not parser
+checks. The parser's documented nesting resource limit is described in parser.md.
+
 ## Lexical terminals
 
 ```ebnf

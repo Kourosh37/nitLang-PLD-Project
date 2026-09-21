@@ -1,7 +1,7 @@
 # NITLang architecture
 
-Status: Milestones 0-2 are implemented (tooling, CLI skeleton, source locations,
-tokens, lexer and lexical diagnostics). Other compiler/runtime modules below
+Status: Milestones 0-3 are implemented (tooling, ast CLI, source locations,
+tokens, lexer, Surface AST, parser and syntax diagnostics). Other compiler/runtime modules below
 are planned contracts.
 GROUP_SIZE = 1. Pattern matching is the single planned extension.
 
@@ -72,3 +72,12 @@ Success contains an immutable typed token stream ending in EOF; failure contains
 one structured Syntax Error and no tokens. Literal conversion happens here;
 expression parsing and static semantics do not. The diagnostic module depends
 only on source-span types and can be reused by later phases. See lexer.md.
+
+## Surface parsing boundary
+
+Parser consumes tokens and emits the separate Surface Program type. The parse
+facade composes lexer/parser failure results; parseTokens exposes the token-only
+boundary. Statements use recursive descent and expressions precedence climbing.
+Syntax nodes retain unresolved identifiers and type annotations, including
+surface sugars for later lowering. CLI ast reads source and prints JSON without
+executing or typechecking it. See parser.md for contracts and restrictions.

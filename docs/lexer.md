@@ -16,8 +16,8 @@ if (result.ok) {
 }
 ```
 
-This example shows the API; it is not a language execution command. The six
-reserved CLI commands remain unavailable until their actual phases exist.
+This example shows the lexer API; it is not a language execution command.
+Since M3, ast composes lexing and parsing; other CLI phases remain unavailable.
 
 ## Token contract
 

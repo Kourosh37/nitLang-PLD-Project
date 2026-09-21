@@ -1,9 +1,14 @@
+import { formatDiagnostic } from "../diagnostics/diagnostic";
+import { parse } from "../frontend/parser";
+import { SourceFile } from "../frontend/source-file";
+
 export const commands = ["run", "check", "ast", "core-ast", "bytecode", "vm"] as const;
 export type Command = (typeof commands)[number];
 
 export interface CliIO {
   readonly stdout: (message: string) => void;
   readonly stderr: (message: string) => void;
+  readonly readFile: (path: string) => { readonly ok: true; readonly text: string } | { readonly ok: false; readonly message: string };
 }
 
 export const help = `NITLang - educational programming language
@@ -21,7 +26,7 @@ Commands:
 Options:
   -h, --help Show this help
 
-Command interface only; language execution is not implemented yet.`;
+The ast command is available; language execution is not implemented yet.`;
 
 function isCommand(value: string): value is Command {
   return commands.some((command) => command === value);
@@ -40,6 +45,20 @@ export function runCli(args: readonly string[], io: CliIO): number {
   if (args.length !== 2 || file === undefined || file.trim() === "") {
     io.stderr(`CLI Error: expected '${command} <file.nit>'. Use --help.`);
     return 2;
+  }
+  if (command === "ast") {
+    const input = io.readFile(file);
+    if (!input.ok) {
+      io.stderr(`CLI Error: cannot read ${JSON.stringify(file)}: ${input.message}`);
+      return 2;
+    }
+    const result = parse(new SourceFile(file, input.text));
+    if (!result.ok) {
+      io.stderr(formatDiagnostic(result.diagnostic));
+      return 1;
+    }
+    io.stdout(JSON.stringify(result.program, null, 2));
+    return 0;
   }
   io.stderr(`CLI Error: '${command}' is not implemented yet.`);
   return 2;

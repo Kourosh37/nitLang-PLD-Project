@@ -4,11 +4,10 @@ An educational programming language implemented incrementally in strict TypeScri
 using Bun. The target is a statically checked tree-walk interpreter plus a stack
 VM for a smaller subset, with explicit lexical environments and store locations.
 
-**Current status: Milestone 2.** Project tooling, a tested CLI skeleton, finalized
-language specification, immutable source locations, a hand-written lexer and
-structured lexical diagnostics are available. Parser, checker, interpreter and
-VM are not implemented yet.
-Language examples below illustrate the specification; they cannot run yet.
+**Current status: Milestone 3.** Source text can be lexed and parsed into a typed
+Surface AST with source locations and structured syntax diagnostics. The `ast`
+CLI command is operational. Checker, desugaring, interpreter and VM are not yet
+implemented; examples can be inspected as ASTs but cannot execute yet.
 
 ## Requirements and setup
 
@@ -33,7 +32,13 @@ bun run test:watch
 bun run check:all
 ```
 
-The CLI reserves these commands for subsequent milestones:
+Inspect the included combined-feature example:
+
+```sh
+bun run nitlang ast examples/surface-tour.nit
+```
+
+The CLI command set is:
 
 ```sh
 bun run nitlang run file.nit
@@ -44,8 +49,9 @@ bun run nitlang bytecode file.nit
 bun run nitlang vm file.nit
 ```
 
-Currently each reserved command reports that it is unimplemented and exits with
-status 2. Help exits 0. Invalid invocations also exit 2. No source file is executed.
+`ast` emits JSON and exits 0, or reports a lexical/parser diagnostic and exits 1.
+File-read and invocation errors exit 2. Other commands remain unavailable and
+exit 2. Help exits 0. No source file is executed or statically typechecked yet.
 
 ## Planned language
 
@@ -66,9 +72,11 @@ print, conditions and loops. Pattern matching is the extension for GROUP_SIZE = 
 
 ```text
 src/cli/       CLI interface and Bun entry point
-src/frontend/  Source positions, indexed source text, tokens and lexer
+src/frontend/  Source positions, lexer, tokens, parser and precedence table
+src/ast/surface/ Typed syntax tree and annotation nodes
 src/diagnostics/ Structured diagnostics and text formatting
-tests/         Lexer, diagnostics, source locations, CLI and .nit fixtures
+tests/         Frontend, diagnostics, source locations, CLI and .nit fixtures
+examples/      Programs inspectable through the ast command
 docs/          Language specification, architecture and milestone reports
 ```
 
@@ -76,8 +84,10 @@ Read the [language specification](docs/language-spec.md),
 [complete EBNF](docs/grammar.md), [architecture](docs/architecture.md),
 [design decisions](docs/design-decisions.md), and
 [implementation plan](docs/implementation-plan.md), plus the implemented
-[source-location contract](docs/source-locations.md) and [lexer API](docs/lexer.md).
+[source-location contract](docs/source-locations.md), [lexer API](docs/lexer.md)
+and [parser/AST design](docs/parser.md).
 
-Future stages add source fixtures, examples, runtime/memory documentation, VM
+Future stages add executable fixtures/examples, runtime/memory documentation, VM
 instructions, formal semantics, Hoare reasoning and a verified requirements matrix.
-Next: Milestone 3, Surface AST and recursive descent / precedence-based parsing.
+Next: Milestone 4, primitive/variable/block contracts and operation tests; checked
+execution follows the storage, lowering and semantic infrastructure in M5-M7.

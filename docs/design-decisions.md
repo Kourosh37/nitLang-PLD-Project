@@ -66,3 +66,19 @@ would obscure aliasing. This is a design explanation, not implemented runtime co
 - Recursive method inference cycles require explicit result annotations. Return
   inference excludes nested functions, checks unreachable statements, and uses
   conservative try/catch path analysis. These avoid inference-order accidents.
+
+## Milestone 3 decisions
+
+- Surface annotations are syntax nodes, not semantic types. All AST nodes retain
+  spans; optional constructs use explicit null and source-order arrays are readonly.
+- Keep grouping, empty statements, for and logical operators visible until
+  lowering; do not manufacture Core nodes in the parser.
+- Centralize binary precedence and use precedence climbing with p+1 on the right
+  for left association. Statement parsing remains recursive descent.
+- Permit parentheses around identifier/field assignment targets. Ref assignment
+  remains expression-shaped pending type checking.
+- Introduce a controlled 128-frame syntactic recursion limit, distinct from
+  runtime recursion. Long flat operator chains remain iterative.
+- Enable ast now because its complete dependency chain exists; do not enable
+  check or run before their semantic pipeline is implemented. File I/O is injected
+  into CLI tests and performed only at the actual process boundary.

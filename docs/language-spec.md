@@ -1,7 +1,8 @@
 # NITLang language specification v1
 
 Finalized in Milestone 1. This is the target contract, not a list of implemented
-features. Tooling, the CLI skeleton, source locations and lexing are implemented.
+features. Tooling, source locations, lexing, Surface AST parsing and the ast CLI
+are implemented. Semantic checking and execution remain future milestones.
 Changes to this contract require an explicit design decision and matching tests.
 
 ## Lexical rules
