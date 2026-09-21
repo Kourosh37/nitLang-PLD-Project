@@ -22,3 +22,8 @@ test("diagnostic notes and controlled internal error preserve structured data", 
   expect(error.message).toBe("Expected int.");
   expect(formatDiagnostic(diagnostic)).toBe("types.nit:1:1: Type Error: Expected int.\n  note: The binding was declared here.\n  note: Use an integer value.");
 });
+test("renderer includes the original line and a bounded caret", () => {
+  const source = new SourceFile("bad.nit", "let x = 1\r\nprint(missing)\r\n");
+  const diagnostic = { category: "Type Error" as const, message: "Undefined.", span: source.span(17, 24) };
+  expect(formatDiagnostic(diagnostic, source)).toBe("bad.nit:2:7: Type Error: Undefined.\n  print(missing)\n        ^^^^^^^");
+});

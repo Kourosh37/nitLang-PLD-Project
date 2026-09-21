@@ -1,4 +1,5 @@
 import type { SourceSpan } from "../frontend/source-span";
+import type { SourceFile } from "../frontend/source-file";
 
 export type DiagnosticCategory = "Syntax Error" | "Type Error" | "Runtime Error";
 
@@ -17,8 +18,14 @@ export class DiagnosticError extends Error {
   }
 }
 
-export function formatDiagnostic(diagnostic: Diagnostic): string {
+export function formatDiagnostic(diagnostic: Diagnostic, source?: SourceFile): string {
   const { sourceName, start } = diagnostic.span;
   const heading = `${sourceName}:${start.line}:${start.column}: ${diagnostic.category}: ${diagnostic.message}`;
-  return [heading, ...(diagnostic.notes ?? []).map((note) => `  note: ${note}`)].join("\n");
+  const detail: string[] = [];
+  if (source !== undefined && source.name === sourceName) {
+    const line = source.lineText(start.line);
+    const width = diagnostic.span.end.line === start.line ? Math.max(1, diagnostic.span.end.column - start.column) : 1;
+    detail.push(`  ${line}`, `  ${" ".repeat(start.column - 1)}${"^".repeat(width)}`);
+  }
+  return [heading, ...detail, ...(diagnostic.notes ?? []).map((note) => `  note: ${note}`)].join("\n");
 }

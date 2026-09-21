@@ -57,12 +57,12 @@ export function runCli(args: readonly string[], io: CliIO): number {
     const source = new SourceFile(file, input.text);
     if (command === "check" || command === "run") {
       const result = command === "check" ? check(source) : run(source, io.stdout);
-      if (!result.ok) { io.stderr(formatDiagnostic(result.diagnostic)); return 1; }
+      if (!result.ok) { io.stderr(formatDiagnostic(result.diagnostic, source)); return 1; }
       return 0;
     }
     const result = parse(source);
     if (!result.ok) {
-      io.stderr(formatDiagnostic(result.diagnostic));
+      io.stderr(formatDiagnostic(result.diagnostic, source));
       return 1;
     }
     io.stdout(JSON.stringify(command === "core-ast" ? desugar(result.program) : result.program, null, 2));
